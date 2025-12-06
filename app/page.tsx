@@ -47,14 +47,14 @@ export default function TopTrendShop() {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200/50">
-        <div className="container mx-auto px-6 py-2">
+        <div className="container mx-auto px-6 py-1">
           <div className="flex items-center justify-center">
-            <div className="w-48 h-48 rounded-xl overflow-hidden flex items-center justify-center">
+            <div className="w-20 h-20 rounded-xl overflow-hidden flex items-center justify-center">
               <Image 
                 src="/TopTrend..png" 
                 alt="TopTrendShop Logo" 
-                width={192} 
-                height={192}
+                width={80} 
+                height={80}
                 className="object-contain"
               />
             </div>
