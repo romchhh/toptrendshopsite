@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
 
@@ -36,11 +36,35 @@ const products: Product[] = [
   { id: '20', name: 'Kul', url: 'https://kul.lattechi.space', emoji: '🎁', description: 'Подарунки', accent: 'hover:bg-red-50' },
 ];
 
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        openLink: (url: string) => void;
+        openTelegramLink: (url: string) => void;
+        ready: () => void;
+      };
+    };
+  }
+}
+
 export default function TopTrendShop() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
+  useEffect(() => {
+    // Ініціалізуємо Telegram WebApp
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      window.Telegram.WebApp.ready();
+    }
+  }, []);
+
   const handleProductClick = (url: string) => {
-    window.open(url, '_blank');
+    // Використовуємо Telegram WebApp API якщо доступно, інакше звичайне відкриття
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      window.Telegram.WebApp.openLink(url);
+    } else {
+      window.open(url, '_blank');
+    }
   };
 
   return (
@@ -116,13 +140,18 @@ export default function TopTrendShop() {
                 </p>
               </div>
 
-              {/* URL with fade effect */}
-              <div className="flex items-center gap-2">
+              {/* URL with button */}
+              <div className="flex items-center gap-2 mt-4 mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-400 truncate font-mono">
+                  <p className="text-xs text-blue-600 font-medium truncate">
                     {product.url.replace('https://', '')}
                   </p>
                 </div>
+              </div>
+              
+              {/* CTA Button */}
+              <div className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl px-4 py-3.5 text-sm font-bold text-center transition-all duration-300 group-hover:from-blue-700 group-hover:to-purple-700 group-hover:shadow-lg group-hover:scale-105">
+                Перейти до товару →
               </div>
               
               {/* Bottom accent line */}
