@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { ArrowUpRight } from 'lucide-react';
@@ -45,22 +47,16 @@ export default function TopTrendShop() {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200/50">
-        <div className="container mx-auto px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center">
-                <Image 
-                  src="/TopTrend..png" 
-                  alt="TopTrendShop Logo" 
-                  width={40} 
-                  height={40}
-                  className="object-contain"
-                />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">TopTrendShop</h1>
-            </div>
-            <div className="hidden sm:block text-sm text-gray-500">
-              {products.length} товарів
+        <div className="container mx-auto px-6 py-2">
+          <div className="flex items-center justify-center">
+            <div className="w-48 h-48 rounded-xl overflow-hidden flex items-center justify-center">
+              <Image 
+                src="/TopTrend..png" 
+                alt="TopTrendShop Logo" 
+                width={192} 
+                height={192}
+                className="object-contain"
+              />
             </div>
           </div>
         </div>
@@ -83,11 +79,6 @@ export default function TopTrendShop() {
           Натискай на товар, відкривай Mini App і переходь на сторінку покупки.
         </p>
         
-        <div className="inline-block bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3">
-          <p className="text-sm text-amber-800">
-            ⏰ З лендінгами трошки затримка, але скоро будуть
-          </p>
-        </div>
       </section>
 
       {/* Products Grid */}
@@ -147,17 +138,16 @@ export default function TopTrendShop() {
       <footer className="border-t border-gray-200 bg-white/50 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-12">
           <div className="text-center space-y-3">
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+            <div className="flex items-center justify-center">
+              <div className="w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center">
                 <Image 
                   src="/TopTrend..png" 
                   alt="TopTrendShop Logo" 
-                  width={32} 
-                  height={32}
+                  width={64} 
+                  height={64}
                   className="object-contain"
                 />
               </div>
-              <p className="text-lg font-semibold text-gray-900">TopTrendShop</p>
             </div>
             <p className="text-sm text-gray-500">
               Каталог найкращих товарів у Telegram
