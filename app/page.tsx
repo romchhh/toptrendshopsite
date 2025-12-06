@@ -1,65 +1,173 @@
-import Image from "next/image";
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { ArrowUpRight } from 'lucide-react';
 
-export default function Home() {
+interface Product {
+  id: string;
+  name: string;
+  url: string;
+  emoji: string;
+  description: string;
+  accent: string;
+}
+
+const products: Product[] = [
+  { id: '1', name: 'Trekil', url: 'https://trekil.lattechi.space', emoji: '🎯', description: 'Преміум якість', accent: 'hover:bg-blue-50' },
+  { id: '2', name: 'Emal', url: 'https://emal.lattechi.space', emoji: '✨', description: 'Топ продаж', accent: 'hover:bg-purple-50' },
+  { id: '3', name: 'Rustof', url: 'https://rustof.lattechi.space', emoji: '🔥', description: 'Гаряча ціна', accent: 'hover:bg-orange-50' },
+  { id: '4', name: 'Hold', url: 'https://hold.lattechi.space', emoji: '💎', description: 'Преміум вибір', accent: 'hover:bg-cyan-50' },
+  { id: '5', name: 'Pover', url: 'https://pover.lattechi.space', emoji: '⚡', description: 'Швидка доставка', accent: 'hover:bg-yellow-50' },
+  { id: '6', name: 'Valgus', url: 'https://valgus.lattechi.space', emoji: '💫', description: 'Новинка', accent: 'hover:bg-pink-50' },
+  { id: '7', name: 'LED', url: 'https://led.lattechi.space', emoji: '💡', description: 'Освітлення', accent: 'hover:bg-amber-50' },
+  { id: '8', name: 'LEDD', url: 'https://ledd.lattechi.space', emoji: '🌟', description: 'Яскраве світло', accent: 'hover:bg-lime-50' },
+  { id: '9', name: 'Pover50', url: 'https://pover50.lattechi.space', emoji: '⚡', description: 'Потужність 50W', accent: 'hover:bg-indigo-50' },
+  { id: '10', name: 'Shav', url: 'https://shav.lattechi.space', emoji: '✂️', description: 'Догляд', accent: 'hover:bg-teal-50' },
+  { id: '11', name: 'Pod', url: 'https://pod.lattechi.space', emoji: '🎧', description: 'Аудіо преміум', accent: 'hover:bg-violet-50' },
+  { id: '12', name: 'Podu', url: 'https://podu.lattechi.space', emoji: '🎵', description: 'Музика скрізь', accent: 'hover:bg-fuchsia-50' },
+  { id: '13', name: '12V', url: 'https://12v.lattechi.space', emoji: '🔋', description: 'Живлення 12V', accent: 'hover:bg-emerald-50' },
+  { id: '14', name: 'Pet', url: 'https://pet.lattechi.space', emoji: '🐾', description: 'Для улюбленців', accent: 'hover:bg-rose-50' },
+  { id: '15', name: 'Fon', url: 'https://fon.lattechi.space', emoji: '📱', description: 'Мобільні аксесуари', accent: 'hover:bg-sky-50' },
+  { id: '16', name: 'LEDF', url: 'https://ledf.lattechi.space', emoji: '💡', description: 'LED ліхтар', accent: 'hover:bg-orange-50' },
+  { id: '17', name: 'Feya', url: 'https://feya.lattechi.space', emoji: '🧚', description: 'Магічний вибір', accent: 'hover:bg-pink-50' },
+  { id: '18', name: 'Fonar', url: 'https://fonar.lattechi.space', emoji: '🔦', description: 'Потужний ліхтар', accent: 'hover:bg-yellow-50' },
+  { id: '19', name: 'Tap', url: 'https://tap.lattechi.space', emoji: '💧', description: 'Сантехніка', accent: 'hover:bg-blue-50' },
+  { id: '20', name: 'Kul', url: 'https://kul.lattechi.space', emoji: '🎁', description: 'Подарунки', accent: 'hover:bg-red-50' },
+];
+
+export default function TopTrendShop() {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  const handleProductClick = (url: string) => {
+    window.open(url, '_blank');
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      {/* Header */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200/50">
+        <div className="container mx-auto px-6 py-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center">
+                <Image 
+                  src="/TopTrend..png" 
+                  alt="TopTrendShop Logo" 
+                  width={40} 
+                  height={40}
+                  className="object-contain"
+                />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">TopTrendShop</h1>
+            </div>
+            <div className="hidden sm:block text-sm text-gray-500">
+              {products.length} товарів
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="container mx-auto px-6 py-20 max-w-3xl text-center">
+        <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 mb-6">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium text-gray-700">Каталог відкритий</span>
+        </div>
+        
+        <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
+          Привіт! 👋
+        </h2>
+        <p className="text-xl text-gray-600 mb-4 leading-relaxed">
+          Тут зібрані найкращі товари в зручному каталозі.
+        </p>
+        <p className="text-base text-gray-500 mb-8">
+          Натискай на товар, відкривай Mini App і переходь на сторінку покупки.
+        </p>
+        
+        <div className="inline-block bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3">
+          <p className="text-sm text-amber-800">
+            ⏰ З лендінгами трошки затримка, але скоро будуть
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Products Grid */}
+      <section className="container mx-auto px-6 pb-24">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
+          {products.map((product) => (
+            <button
+              key={product.id}
+              className={`group relative bg-white border-2 border-gray-100 rounded-3xl p-7 text-left transition-all duration-300 hover:border-gray-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-gray-200/50 ${product.accent}`}
+              onMouseEnter={() => setHoveredId(product.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => handleProductClick(product.url)}
+            >
+              {/* Emoji with background */}
+              <div className="relative mb-5">
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="text-4xl">{product.emoji}</span>
+                </div>
+                
+                {/* Arrow indicator */}
+                <div className={`absolute -top-2 -right-2 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  hoveredId === product.id ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+                }`}>
+                  <ArrowUpRight className="w-4 h-4 text-white" />
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="space-y-2 mb-4">
+                <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                  {product.name}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+
+              {/* URL with fade effect */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 truncate font-mono">
+                    {product.url.replace('https://', '')}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Bottom accent line */}
+              <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-gray-900 to-gray-600 rounded-b-3xl transition-all duration-300 ${
+                hoveredId === product.id ? 'opacity-100' : 'opacity-0'
+              }`}></div>
+            </button>
+          ))}
         </div>
-      </main>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-white/50 backdrop-blur-xl">
+        <div className="container mx-auto px-6 py-12">
+          <div className="text-center space-y-3">
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+                <Image 
+                  src="/TopTrend..png" 
+                  alt="TopTrendShop Logo" 
+                  width={32} 
+                  height={32}
+                  className="object-contain"
+                />
+              </div>
+              <p className="text-lg font-semibold text-gray-900">TopTrendShop</p>
+            </div>
+            <p className="text-sm text-gray-500">
+              Каталог найкращих товарів у Telegram
+            </p>
+            <p className="text-xs text-gray-400">
+              © 2024 TopTrendShop. Обирай товар у Mini App ✨
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
