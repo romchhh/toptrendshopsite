@@ -8,6 +8,7 @@ interface Product {
   id: string;
   name: string;
   url: string;
+  telegramUrl?: string; // Telegram Mini App посилання
   emoji: string;
   description: string;
   accent: string;
@@ -27,7 +28,7 @@ const products: Product[] = [
   { id: '11', name: 'Pod', url: 'https://pod.lattechi.space', emoji: '🎧', description: 'Аудіо преміум', accent: 'hover:bg-violet-50' },
   { id: '12', name: 'Podu', url: 'https://podu.lattechi.space', emoji: '🎵', description: 'Музика скрізь', accent: 'hover:bg-fuchsia-50' },
   { id: '13', name: '12V', url: 'https://12v.lattechi.space', emoji: '🔋', description: 'Живлення 12V', accent: 'hover:bg-emerald-50' },
-  { id: '14', name: 'Pet', url: 'https://pet.lattechi.space', emoji: '🐾', description: 'Для улюбленців', accent: 'hover:bg-rose-50' },
+  { id: '14', name: 'Pet', url: 'https://pet.lattechi.space', telegramUrl: 't.me/TopTrendShopBot/petlattechispace', emoji: '🐾', description: 'Для улюбленців', accent: 'hover:bg-rose-50' },
   { id: '15', name: 'Fon', url: 'https://fon.lattechi.space', emoji: '📱', description: 'Мобільні аксесуари', accent: 'hover:bg-sky-50' },
   { id: '16', name: 'LEDF', url: 'https://ledf.lattechi.space', emoji: '💡', description: 'LED ліхтар', accent: 'hover:bg-orange-50' },
   { id: '17', name: 'Feya', url: 'https://feya.lattechi.space', emoji: '🧚', description: 'Магічний вибір', accent: 'hover:bg-pink-50' },
@@ -58,12 +59,19 @@ export default function TopTrendShop() {
     }
   }, []);
 
-  const handleProductClick = (url: string) => {
+  const handleProductClick = (url: string, telegramUrl?: string) => {
     if (typeof window !== 'undefined') {
       // Перевіряємо чи ми в Telegram Mini App
       if (window.Telegram?.WebApp) {
-        // Відкриваємо безпосередньо в поточному WebView без діалогу підтвердження
-        window.location.href = url;
+        // Якщо є Telegram Mini App посилання, використовуємо його
+        if (telegramUrl) {
+          window.Telegram.WebApp.openTelegramLink(`https://${telegramUrl}`);
+        } else {
+          // Якщо немає Telegram посилання, відкриваємо через openLink
+          window.Telegram.WebApp.openLink(url, {
+            try_instant_view: true
+          });
+        }
       } else {
         // Якщо не в Mini App, відкриваємо в новій вкладці
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -118,7 +126,7 @@ export default function TopTrendShop() {
               className={`group relative bg-white border-2 border-gray-100 rounded-3xl p-7 text-left transition-all duration-300 hover:border-gray-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-gray-200/50 ${product.accent}`}
               onMouseEnter={() => setHoveredId(product.id)}
               onMouseLeave={() => setHoveredId(null)}
-              onClick={() => handleProductClick(product.url)}
+              onClick={() => handleProductClick(product.url, product.telegramUrl)}
             >
               {/* Emoji with background */}
               <div className="relative mb-5">
@@ -147,7 +155,9 @@ export default function TopTrendShop() {
               {/* URL chip */}
               <div className="mt-4 mb-3">
                 <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2.5 rounded-full font-medium text-sm border border-blue-200 transition-all group-hover:bg-blue-100 group-hover:shadow-md">
-                  <span className="truncate max-w-48">{product.url.replace('https://', '').replace('www.', '')}</span>
+                  <span className="truncate max-w-48">
+                    {product.telegramUrl ? product.telegramUrl.replace('t.me/', '') : product.url.replace('https://', '').replace('www.', '')}
+                  </span>
                   <ArrowUpRight className="w-4 h-4 flex-shrink-0" />
                 </div>
               </div>
