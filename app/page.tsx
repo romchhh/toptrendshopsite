@@ -40,7 +40,7 @@ declare global {
   interface Window {
     Telegram?: {
       WebApp?: {
-        openLink: (url: string) => void;
+        openLink: (url: string, options?: { try_instant_view?: boolean }) => void;
         openTelegramLink: (url: string) => void;
         ready: () => void;
       };
@@ -59,11 +59,13 @@ export default function TopTrendShop() {
   }, []);
 
   const handleProductClick = (url: string) => {
-    // Використовуємо Telegram WebApp API якщо доступно, інакше звичайне відкриття
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      window.Telegram.WebApp.openLink(url);
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.openLink) {
+      // Відкриваємо всередині Mini App через Instant View
+      window.Telegram.WebApp.openLink(url, {
+        try_instant_view: true
+      });
     } else {
-      window.open(url, '_blank');
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -140,18 +142,20 @@ export default function TopTrendShop() {
                 </p>
               </div>
 
-              {/* URL with button */}
-              <div className="flex items-center gap-2 mt-4 mb-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-blue-600 font-medium truncate">
-                    {product.url.replace('https://', '')}
-                  </p>
+              {/* URL chip */}
+              <div className="mt-4 mb-3">
+                <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2.5 rounded-full font-medium text-sm border border-blue-200 transition-all group-hover:bg-blue-100 group-hover:shadow-md">
+                  <span className="truncate max-w-48">{product.url.replace('https://', '').replace('www.', '')}</span>
+                  <ArrowUpRight className="w-4 h-4 flex-shrink-0" />
                 </div>
               </div>
               
               {/* CTA Button */}
-              <div className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl px-4 py-3.5 text-sm font-bold text-center transition-all duration-300 group-hover:from-blue-700 group-hover:to-purple-700 group-hover:shadow-lg group-hover:scale-105">
-                Перейти до товару →
+              <div className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl px-6 py-4 text-lg font-extrabold text-center transition-all duration-300 group-hover:from-indigo-700 group-hover:to-purple-700 group-hover:shadow-2xl group-hover:scale-105 group-active:scale-95">
+                <span className="flex items-center justify-center gap-2">
+                  Перейти до товару
+                  <ArrowUpRight className="w-6 h-6" />
+                </span>
               </div>
               
               {/* Bottom accent line */}
