@@ -59,13 +59,15 @@ export default function TopTrendShop() {
   }, []);
 
   const handleProductClick = (url: string) => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp?.openLink) {
-      // Відкриваємо всередині Mini App через Instant View
-      window.Telegram.WebApp.openLink(url, {
-        try_instant_view: true
-      });
-    } else {
-      window.open(url, '_blank', 'noopener,noreferrer');
+    if (typeof window !== 'undefined') {
+      // Перевіряємо чи ми в Telegram Mini App
+      if (window.Telegram?.WebApp) {
+        // Відкриваємо безпосередньо в поточному WebView без діалогу підтвердження
+        window.location.href = url;
+      } else {
+        // Якщо не в Mini App, відкриваємо в новій вкладці
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
     }
   };
 
