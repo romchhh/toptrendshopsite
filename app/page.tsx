@@ -34,7 +34,7 @@ const products: Product[] = [
   { id: '11', name: 'Pod', url: 'https://pod.lattechi.space', telegramUrl: generateTelegramUrl('https://pod.lattechi.space'), emoji: '🎧', description: 'Аудіо преміум', accent: 'hover:bg-violet-50' },
   { id: '12', name: 'Podu', url: 'https://podu.lattechi.space', telegramUrl: generateTelegramUrl('https://podu.lattechi.space'), emoji: '🎵', description: 'Музика скрізь', accent: 'hover:bg-fuchsia-50' },
   { id: '13', name: '12V', url: 'https://12v.lattechi.space', telegramUrl: generateTelegramUrl('https://12v.lattechi.space'), emoji: '🔋', description: 'Живлення 12V', accent: 'hover:bg-emerald-50' },
-  { id: '14', name: 'Pet', url: 'https://pet.lattechi.space', telegramUrl: 'https://t.me/TopTrendShopBot/petlattechispace', emoji: '🐾', description: 'Для улюбленців', accent: 'hover:bg-rose-50' },
+  { id: '14', name: 'Pet', url: 'https://t.me/TopTrendShopBot/petlattechispace', telegramUrl: 'https://t.me/TopTrendShopBot/petlattechispace', emoji: '🐾', description: 'Для улюбленців', accent: 'hover:bg-rose-50' },
   { id: '15', name: 'Fon', url: 'https://fon.lattechi.space', telegramUrl: generateTelegramUrl('https://fon.lattechi.space'), emoji: '📱', description: 'Мобільні аксесуари', accent: 'hover:bg-sky-50' },
   { id: '16', name: 'LEDF', url: 'https://ledf.lattechi.space', telegramUrl: generateTelegramUrl('https://ledf.lattechi.space'), emoji: '💡', description: 'LED ліхтар', accent: 'hover:bg-orange-50' },
   { id: '17', name: 'Feya', url: 'https://feya.lattechi.space', telegramUrl: generateTelegramUrl('https://feya.lattechi.space'), emoji: '🧚', description: 'Магічний вибір', accent: 'hover:bg-pink-50' },
