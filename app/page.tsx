@@ -14,27 +14,33 @@ interface Product {
   accent: string;
 }
 
+// Функція для генерації Telegram Mini App посилання з URL
+const generateTelegramUrl = (url: string): string => {
+  const domain = url.replace('https://', '').replace('.lattechi.space', '').toLowerCase();
+  return `t.me/TopTrendShopBot/${domain}lattechispace`;
+};
+
 const products: Product[] = [
-  { id: '1', name: 'Trekil', url: 'https://trekil.lattechi.space', emoji: '🎯', description: 'Преміум якість', accent: 'hover:bg-blue-50' },
-  { id: '2', name: 'Emal', url: 'https://emal.lattechi.space', emoji: '✨', description: 'Топ продаж', accent: 'hover:bg-purple-50' },
-  { id: '3', name: 'Rustof', url: 'https://rustof.lattechi.space', emoji: '🔥', description: 'Гаряча ціна', accent: 'hover:bg-orange-50' },
-  { id: '4', name: 'Hold', url: 'https://hold.lattechi.space', emoji: '💎', description: 'Преміум вибір', accent: 'hover:bg-cyan-50' },
-  { id: '5', name: 'Pover', url: 'https://pover.lattechi.space', emoji: '⚡', description: 'Швидка доставка', accent: 'hover:bg-yellow-50' },
-  { id: '6', name: 'Valgus', url: 'https://valgus.lattechi.space', emoji: '💫', description: 'Новинка', accent: 'hover:bg-pink-50' },
-  { id: '7', name: 'LED', url: 'https://led.lattechi.space', emoji: '💡', description: 'Освітлення', accent: 'hover:bg-amber-50' },
-  { id: '8', name: 'LEDD', url: 'https://ledd.lattechi.space', emoji: '🌟', description: 'Яскраве світло', accent: 'hover:bg-lime-50' },
-  { id: '9', name: 'Pover50', url: 'https://pover50.lattechi.space', emoji: '⚡', description: 'Потужність 50W', accent: 'hover:bg-indigo-50' },
-  { id: '10', name: 'Shav', url: 'https://shav.lattechi.space', emoji: '✂️', description: 'Догляд', accent: 'hover:bg-teal-50' },
-  { id: '11', name: 'Pod', url: 'https://pod.lattechi.space', emoji: '🎧', description: 'Аудіо преміум', accent: 'hover:bg-violet-50' },
-  { id: '12', name: 'Podu', url: 'https://podu.lattechi.space', emoji: '🎵', description: 'Музика скрізь', accent: 'hover:bg-fuchsia-50' },
-  { id: '13', name: '12V', url: 'https://12v.lattechi.space', emoji: '🔋', description: 'Живлення 12V', accent: 'hover:bg-emerald-50' },
-  { id: '14', name: 'Pet', url: 'https://pet.lattechi.space', telegramUrl: 't.me/TopTrendShopBot/petlattechispace', emoji: '🐾', description: 'Для улюбленців', accent: 'hover:bg-rose-50' },
-  { id: '15', name: 'Fon', url: 'https://fon.lattechi.space', emoji: '📱', description: 'Мобільні аксесуари', accent: 'hover:bg-sky-50' },
-  { id: '16', name: 'LEDF', url: 'https://ledf.lattechi.space', emoji: '💡', description: 'LED ліхтар', accent: 'hover:bg-orange-50' },
-  { id: '17', name: 'Feya', url: 'https://feya.lattechi.space', emoji: '🧚', description: 'Магічний вибір', accent: 'hover:bg-pink-50' },
-  { id: '18', name: 'Fonar', url: 'https://fonar.lattechi.space', emoji: '🔦', description: 'Потужний ліхтар', accent: 'hover:bg-yellow-50' },
-  { id: '19', name: 'Tap', url: 'https://tap.lattechi.space', emoji: '💧', description: 'Сантехніка', accent: 'hover:bg-blue-50' },
-  { id: '20', name: 'Kul', url: 'https://kul.lattechi.space', emoji: '🎁', description: 'Подарунки', accent: 'hover:bg-red-50' },
+  { id: '1', name: 'Trekil', url: 'https://trekil.lattechi.space', telegramUrl: generateTelegramUrl('https://trekil.lattechi.space'), emoji: '🎯', description: 'Преміум якість', accent: 'hover:bg-blue-50' },
+  { id: '2', name: 'Emal', url: 'https://emal.lattechi.space', telegramUrl: generateTelegramUrl('https://emal.lattechi.space'), emoji: '✨', description: 'Топ продаж', accent: 'hover:bg-purple-50' },
+  { id: '3', name: 'Rustof', url: 'https://rustof.lattechi.space', telegramUrl: generateTelegramUrl('https://rustof.lattechi.space'), emoji: '🔥', description: 'Гаряча ціна', accent: 'hover:bg-orange-50' },
+  { id: '4', name: 'Hold', url: 'https://hold.lattechi.space', telegramUrl: generateTelegramUrl('https://hold.lattechi.space'), emoji: '💎', description: 'Преміум вибір', accent: 'hover:bg-cyan-50' },
+  { id: '5', name: 'Pover', url: 'https://pover.lattechi.space', telegramUrl: generateTelegramUrl('https://pover.lattechi.space'), emoji: '⚡', description: 'Швидка доставка', accent: 'hover:bg-yellow-50' },
+  { id: '6', name: 'Valgus', url: 'https://valgus.lattechi.space', telegramUrl: generateTelegramUrl('https://valgus.lattechi.space'), emoji: '💫', description: 'Новинка', accent: 'hover:bg-pink-50' },
+  { id: '7', name: 'LED', url: 'https://led.lattechi.space', telegramUrl: generateTelegramUrl('https://led.lattechi.space'), emoji: '💡', description: 'Освітлення', accent: 'hover:bg-amber-50' },
+  { id: '8', name: 'LEDD', url: 'https://ledd.lattechi.space', telegramUrl: generateTelegramUrl('https://ledd.lattechi.space'), emoji: '🌟', description: 'Яскраве світло', accent: 'hover:bg-lime-50' },
+  { id: '9', name: 'Pover50', url: 'https://pover50.lattechi.space', telegramUrl: generateTelegramUrl('https://pover50.lattechi.space'), emoji: '⚡', description: 'Потужність 50W', accent: 'hover:bg-indigo-50' },
+  { id: '10', name: 'Shav', url: 'https://shav.lattechi.space', telegramUrl: generateTelegramUrl('https://shav.lattechi.space'), emoji: '✂️', description: 'Догляд', accent: 'hover:bg-teal-50' },
+  { id: '11', name: 'Pod', url: 'https://pod.lattechi.space', telegramUrl: generateTelegramUrl('https://pod.lattechi.space'), emoji: '🎧', description: 'Аудіо преміум', accent: 'hover:bg-violet-50' },
+  { id: '12', name: 'Podu', url: 'https://podu.lattechi.space', telegramUrl: generateTelegramUrl('https://podu.lattechi.space'), emoji: '🎵', description: 'Музика скрізь', accent: 'hover:bg-fuchsia-50' },
+  { id: '13', name: '12V', url: 'https://12v.lattechi.space', telegramUrl: generateTelegramUrl('https://12v.lattechi.space'), emoji: '🔋', description: 'Живлення 12V', accent: 'hover:bg-emerald-50' },
+  { id: '14', name: 'Pet', url: 'https://pet.lattechi.space', telegramUrl: 'https://t.me/TopTrendShopBot/petlattechispace', emoji: '🐾', description: 'Для улюбленців', accent: 'hover:bg-rose-50' },
+  { id: '15', name: 'Fon', url: 'https://fon.lattechi.space', telegramUrl: generateTelegramUrl('https://fon.lattechi.space'), emoji: '📱', description: 'Мобільні аксесуари', accent: 'hover:bg-sky-50' },
+  { id: '16', name: 'LEDF', url: 'https://ledf.lattechi.space', telegramUrl: generateTelegramUrl('https://ledf.lattechi.space'), emoji: '💡', description: 'LED ліхтар', accent: 'hover:bg-orange-50' },
+  { id: '17', name: 'Feya', url: 'https://feya.lattechi.space', telegramUrl: generateTelegramUrl('https://feya.lattechi.space'), emoji: '🧚', description: 'Магічний вибір', accent: 'hover:bg-pink-50' },
+  { id: '18', name: 'Fonar', url: 'https://fonar.lattechi.space', telegramUrl: generateTelegramUrl('https://fonar.lattechi.space'), emoji: '🔦', description: 'Потужний ліхтар', accent: 'hover:bg-yellow-50' },
+  { id: '19', name: 'Tap', url: 'https://tap.lattechi.space', telegramUrl: generateTelegramUrl('https://tap.lattechi.space'), emoji: '💧', description: 'Сантехніка', accent: 'hover:bg-blue-50' },
+  { id: '20', name: 'Kul', url: 'https://kul.lattechi.space', telegramUrl: generateTelegramUrl('https://kul.lattechi.space'), emoji: '🎁', description: 'Подарунки', accent: 'hover:bg-red-50' },
 ];
 
 declare global {
@@ -63,11 +69,11 @@ export default function TopTrendShop() {
     if (typeof window !== 'undefined') {
       // Перевіряємо чи ми в Telegram Mini App
       if (window.Telegram?.WebApp) {
-        // Якщо є Telegram Mini App посилання, використовуємо його
+        // Завжди використовуємо Telegram посилання якщо воно є
         if (telegramUrl) {
           window.Telegram.WebApp.openTelegramLink(`https://${telegramUrl}`);
         } else {
-          // Якщо немає Telegram посилання, відкриваємо через openLink
+          // Якщо немає Telegram посилання, все одно намагаємося відкрити через Telegram
           window.Telegram.WebApp.openLink(url, {
             try_instant_view: true
           });
