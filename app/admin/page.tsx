@@ -385,11 +385,9 @@ function ProductForm({
         />
         {formData.backgroundImage && (
           <div className="mt-2">
-            <Image
+            <img
               src={formData.backgroundImage}
               alt="Preview"
-              width={200}
-              height={100}
               className="w-full h-24 object-cover rounded-lg"
             />
           </div>

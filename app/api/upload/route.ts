@@ -35,6 +35,16 @@ export async function POST(request: NextRequest) {
 
     await writeFile(filePath, buffer);
 
+    // Перевіряємо, чи файл реально створено
+    const fs = require('fs');
+    if (!fs.existsSync(filePath)) {
+      throw new Error('Файл не був створений після запису');
+    }
+
+    console.log('File uploaded successfully:', filePath);
+    console.log('File exists:', fs.existsSync(filePath));
+    console.log('File size:', fs.statSync(filePath).size);
+
     return NextResponse.json({ 
       success: true, 
       url: `/uploads/${filename}` 

@@ -134,6 +134,10 @@ export default function TopTrendShop() {
                       alt={product.name}
                       className="w-full h-full object-cover"
                       style={{ filter: 'blur(0.5px)' }}
+                      onError={(e) => {
+                        console.error('Image load error:', product.backgroundImage);
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
                     />
                   </div>
                 )}
