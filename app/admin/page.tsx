@@ -162,6 +162,15 @@ export default function AdminPanel() {
   const handleImageUpload = async (productId: string, file: File) => {
     setUploadingImage(productId);
     try {
+      // Перевірка розміру файлу на клієнті
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        alert('Файл занадто великий. Максимальний розмір: 10 МБ');
+        setUploadingImage(null);
+        return;
+      }
+
+      console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
       const formData = new FormData();
       formData.append('file', file);
 
@@ -170,9 +179,17 @@ export default function AdminPanel() {
         body: formData,
       });
 
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Невідома помилка' }));
+        console.error('Upload failed:', errorData);
+        alert(errorData.error || `Помилка завантаження: ${res.status} ${res.statusText}`);
+        setUploadingImage(null);
+        return;
+      }
+
       const data = await res.json();
 
-      if (res.ok && data.url) {
+      if (data.url) {
         console.log('Image uploaded, URL:', data.url);
         if (editingId === productId || productId === 'new') {
           // Якщо редагуємо або додаємо новий, оновлюємо formData

@@ -18,8 +18,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Файл не знайдено' }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    // Перевірка розміру файлу (10 МБ максимум)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: 'Файл занадто великий. Максимальний розмір: 10 МБ' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
+
+    let bytes: ArrayBuffer;
+    let buffer: Buffer;
+    
+    try {
+      bytes = await file.arrayBuffer();
+      console.log('File arrayBuffer created, length:', bytes.byteLength);
+      
+      buffer = Buffer.from(bytes);
+      console.log('Buffer created, length:', buffer.length);
+    } catch (bufferError) {
+      console.error('Error reading file:', bufferError);
+      return NextResponse.json(
+        { error: 'Помилка обробки файлу. Можливо файл занадто великий або пошкоджений.' },
+        { status: 413 }
+      );
+    }
 
     const timestamp = Date.now();
     // Очищаємо ім'я файлу від спеціальних символів та пробілів
