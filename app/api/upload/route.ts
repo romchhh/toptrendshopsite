@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import { getAuthUser } from '@/lib/middleware-auth';
 
 export async function POST(request: NextRequest) {
@@ -21,10 +22,18 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     const timestamp = Date.now();
-    const filename = `${timestamp}-${file.name}`;
-    const path = join(process.cwd(), 'public', 'uploads', filename);
+    // Очищаємо ім'я файлу від спеціальних символів та пробілів
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filename = `${timestamp}-${sanitizedName}`;
+    const uploadsDir = join(process.cwd(), 'public', 'uploads');
+    const filePath = join(uploadsDir, filename);
 
-    await writeFile(path, buffer);
+    // Створюємо директорію, якщо вона не існує
+    if (!existsSync(uploadsDir)) {
+      await mkdir(uploadsDir, { recursive: true });
+    }
+
+    await writeFile(filePath, buffer);
 
     return NextResponse.json({ 
       success: true, 
@@ -33,7 +42,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Помилка завантаження файлу' },
+      { error: 'Помилка завантаження файлу', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
