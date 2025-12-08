@@ -18,6 +18,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Файл не знайдено' }, { status: 400 });
     }
 
+    // Перевірка типу файлу - має бути зображення
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    const fileType = file.type.toLowerCase();
+    
+    if (!allowedTypes.includes(fileType) && !file.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
+      return NextResponse.json(
+        { error: 'Непідтримуваний формат файлу. Дозволені формати: JPG, PNG, GIF, WEBP, SVG' },
+        { status: 400 }
+      );
+    }
+
     // Перевірка розміру файлу (10 МБ максимум)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
@@ -27,7 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
+    console.log('Uploading file:', file.name, 'Type:', file.type, 'Size:', file.size, 'bytes');
 
     let bytes: ArrayBuffer;
     let buffer: Buffer;
@@ -47,9 +58,14 @@ export async function POST(request: NextRequest) {
     }
 
     const timestamp = Date.now();
-    // Очищаємо ім'я файлу від спеціальних символів та пробілів
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filename = `${timestamp}-${sanitizedName}`;
+    // Зберігаємо розширення файлу та очищаємо ім'я від спеціальних символів
+    const originalName = file.name;
+    const extension = originalName.split('.').pop()?.toLowerCase() || '';
+    const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
+    const sanitizedName = nameWithoutExt.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filename = `${timestamp}-${sanitizedName}.${extension}`;
+    
+    console.log('Original filename:', originalName, 'Sanitized:', filename);
     const uploadsDir = join(process.cwd(), 'public', 'uploads');
     const filePath = join(uploadsDir, filename);
 
