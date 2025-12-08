@@ -24,15 +24,35 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, url, telegramUrl, emoji, description, accent, backgroundImage } = body;
+    const { id, name, url, telegramUrl, description, accent, backgroundImage } = body;
+
+    // Валідація обов'язкових полів
+    if (!id || !name || !url) {
+      return NextResponse.json(
+        { error: 'Обов\'язкові поля: ID, Назва, URL' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Creating product:', { id, name, url, accent: accent || 'hover:bg-blue-50' });
 
     db.prepare(`
       INSERT INTO products (id, name, url, telegramUrl, emoji, description, accent, backgroundImage)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, name, url, telegramUrl || null, emoji, description, accent, backgroundImage || null);
+    `).run(
+      id, 
+      name, 
+      url, 
+      telegramUrl || null, 
+      '📦', 
+      description || '', 
+      accent || 'hover:bg-blue-50', 
+      backgroundImage || null
+    );
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    console.error('Error creating product:', error);
     if (error.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
       return NextResponse.json(
         { error: 'Продукт з таким ID вже існує' },
@@ -40,7 +60,7 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: 'Помилка створення продукту' },
+      { error: 'Помилка створення продукту', details: error.message },
       { status: 500 }
     );
   }

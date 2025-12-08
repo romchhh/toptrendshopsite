@@ -9,7 +9,6 @@ interface Product {
   name: string;
   url: string;
   telegramUrl?: string;
-  emoji: string;
   description: string;
   accent: string;
   backgroundImage?: string;

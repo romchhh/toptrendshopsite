@@ -15,7 +15,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, url, telegramUrl, emoji, description, accent, backgroundImage } = body;
+    const { name, url, telegramUrl, description, accent, backgroundImage } = body;
 
     console.log('Updating product:', id, 'Background image:', backgroundImage);
 
@@ -23,7 +23,7 @@ export async function PUT(
       UPDATE products 
       SET name = ?, url = ?, telegramUrl = ?, emoji = ?, description = ?, accent = ?, backgroundImage = ?, updatedAt = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).run(name, url, telegramUrl || null, emoji, description, accent || null, backgroundImage || null, id);
+    `).run(name, url, telegramUrl || null, '📦', description, accent || null, backgroundImage || null, id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -10,7 +10,6 @@ interface Product {
   name: string;
   url: string;
   telegramUrl?: string;
-  emoji: string;
   description: string;
   accent: string;
   backgroundImage?: string;
@@ -29,7 +28,6 @@ export default function AdminPanel() {
     name: '',
     url: '',
     telegramUrl: '',
-    emoji: '',
     description: '',
     accent: 'hover:bg-blue-50',
     backgroundImage: '',
@@ -78,7 +76,6 @@ export default function AdminPanel() {
       name: '',
       url: '',
       telegramUrl: '',
-      emoji: '',
       description: '',
       accent: 'hover:bg-blue-50',
       backgroundImage: '',
@@ -93,7 +90,6 @@ export default function AdminPanel() {
       name: '',
       url: '',
       telegramUrl: '',
-      emoji: '',
       description: '',
       accent: 'hover:bg-blue-50',
       backgroundImage: '',
@@ -103,19 +99,44 @@ export default function AdminPanel() {
   const handleSave = async () => {
     try {
       console.log('Saving product with data:', formData);
+      
+      // Валідація обов'язкових полів
+      if (!formData.id || !formData.name || !formData.url) {
+        alert('Заповніть обов\'язкові поля: ID, Назва, URL');
+        return;
+      }
+
       if (isAdding) {
-        await fetch('/api/products', {
+        const response = await fetch('/api/products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            emoji: '📦',
+            accent: formData.accent || 'hover:bg-blue-50',
+          }),
         });
+        
+        const result = await response.json();
+        if (!response.ok) {
+          alert(result.error || 'Помилка створення продукту');
+          return;
+        }
       } else if (editingId) {
         const response = await fetch(`/api/products/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            emoji: '📦',
+            accent: formData.accent || 'hover:bg-blue-50',
+          }),
         });
         const result = await response.json();
+        if (!response.ok) {
+          alert(result.error || 'Помилка оновлення продукту');
+          return;
+        }
         console.log('Update response:', result);
       }
       await fetchProducts();
@@ -240,8 +261,7 @@ export default function AdminPanel() {
                 />
               ) : (
                 <>
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="text-4xl">{product.emoji}</div>
+                  <div className="flex items-start justify-end mb-4">
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(product)}
@@ -309,7 +329,7 @@ function ProductForm({
           type="text"
           value={formData.id || ''}
           onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
           placeholder="Унікальний ID"
         />
       </div>
@@ -320,7 +340,7 @@ function ProductForm({
           type="text"
           value={formData.name || ''}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
         />
       </div>
 
@@ -330,7 +350,7 @@ function ProductForm({
           type="text"
           value={formData.url || ''}
           onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
         />
       </div>
 
@@ -340,7 +360,7 @@ function ProductForm({
           type="text"
           value={formData.telegramUrl || ''}
           onChange={(e) => setFormData({ ...formData, telegramUrl: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
           placeholder="t.me/TopTrendShopBot/..."
         />
       </div>
@@ -351,7 +371,7 @@ function ProductForm({
           type="text"
           value={formData.description || ''}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
         />
       </div>
 
