@@ -8,40 +8,12 @@ interface Product {
   id: string;
   name: string;
   url: string;
-  telegramUrl?: string; // Telegram Mini App посилання
+  telegramUrl?: string;
   emoji: string;
   description: string;
   accent: string;
+  backgroundImage?: string;
 }
-
-// Функція для генерації Telegram Mini App посилання з URL
-const generateTelegramUrl = (url: string): string => {
-  const domain = url.replace('https://', '').replace('.lattechi.space', '').toLowerCase();
-  return `t.me/TopTrendShopBot/${domain}lattechispace`;
-};
-
-const products: Product[] = [
-  { id: '1', name: 'Trekil', url: 'https://trekil.lattechi.space', telegramUrl: generateTelegramUrl('https://trekil.lattechi.space'), emoji: '🎯', description: 'Преміум якість', accent: 'hover:bg-blue-50' },
-  { id: '2', name: 'Emal', url: 'https://emal.lattechi.space', telegramUrl: generateTelegramUrl('https://emal.lattechi.space'), emoji: '✨', description: 'Топ продаж', accent: 'hover:bg-purple-50' },
-  { id: '3', name: 'Rustof', url: 'https://rustof.lattechi.space', telegramUrl: generateTelegramUrl('https://rustof.lattechi.space'), emoji: '🔥', description: 'Гаряча ціна', accent: 'hover:bg-orange-50' },
-  { id: '4', name: 'Hold', url: 'https://hold.lattechi.space', telegramUrl: generateTelegramUrl('https://hold.lattechi.space'), emoji: '💎', description: 'Преміум вибір', accent: 'hover:bg-cyan-50' },
-  { id: '5', name: 'Pover', url: 'https://pover.lattechi.space', telegramUrl: generateTelegramUrl('https://pover.lattechi.space'), emoji: '⚡', description: 'Швидка доставка', accent: 'hover:bg-yellow-50' },
-  { id: '6', name: 'Valgus', url: 'https://valgus.lattechi.space', telegramUrl: generateTelegramUrl('https://valgus.lattechi.space'), emoji: '💫', description: 'Новинка', accent: 'hover:bg-pink-50' },
-  { id: '7', name: 'LED', url: 'https://led.lattechi.space', telegramUrl: generateTelegramUrl('https://led.lattechi.space'), emoji: '💡', description: 'Освітлення', accent: 'hover:bg-amber-50' },
-  { id: '8', name: 'LEDD', url: 'https://ledd.lattechi.space', telegramUrl: generateTelegramUrl('https://ledd.lattechi.space'), emoji: '🌟', description: 'Яскраве світло', accent: 'hover:bg-lime-50' },
-  { id: '9', name: 'Pover50', url: 'https://pover50.lattechi.space', telegramUrl: generateTelegramUrl('https://pover50.lattechi.space'), emoji: '⚡', description: 'Потужність 50W', accent: 'hover:bg-indigo-50' },
-  { id: '10', name: 'Shav', url: 'https://shav.lattechi.space', telegramUrl: generateTelegramUrl('https://shav.lattechi.space'), emoji: '✂️', description: 'Догляд', accent: 'hover:bg-teal-50' },
-  { id: '11', name: 'Pod', url: 'https://pod.lattechi.space', telegramUrl: generateTelegramUrl('https://pod.lattechi.space'), emoji: '🎧', description: 'Аудіо преміум', accent: 'hover:bg-violet-50' },
-  { id: '12', name: 'Podu', url: 'https://podu.lattechi.space', telegramUrl: generateTelegramUrl('https://podu.lattechi.space'), emoji: '🎵', description: 'Музика скрізь', accent: 'hover:bg-fuchsia-50' },
-  { id: '13', name: '12V', url: 'https://12v.lattechi.space', telegramUrl: generateTelegramUrl('https://12v.lattechi.space'), emoji: '🔋', description: 'Живлення 12V', accent: 'hover:bg-emerald-50' },
-  { id: '14', name: 'Pet', url: 'https://t.me/TopTrendShopBot/petlattechispace', telegramUrl: 'https://t.me/TopTrendShopBot/petlattechispace', emoji: '🐾', description: 'Для улюбленців', accent: 'hover:bg-rose-50' },
-  { id: '15', name: 'Fon', url: 'https://fon.lattechi.space', telegramUrl: generateTelegramUrl('https://fon.lattechi.space'), emoji: '📱', description: 'Мобільні аксесуари', accent: 'hover:bg-sky-50' },
-  { id: '16', name: 'LEDF', url: 'https://ledf.lattechi.space', telegramUrl: generateTelegramUrl('https://ledf.lattechi.space'), emoji: '💡', description: 'LED ліхтар', accent: 'hover:bg-orange-50' },
-  { id: '17', name: 'Feya', url: 'https://feya.lattechi.space', telegramUrl: generateTelegramUrl('https://feya.lattechi.space'), emoji: '🧚', description: 'Магічний вибір', accent: 'hover:bg-pink-50' },
-  { id: '18', name: 'Fonar', url: 'https://fonar.lattechi.space', telegramUrl: generateTelegramUrl('https://fonar.lattechi.space'), emoji: '🔦', description: 'Потужний ліхтар', accent: 'hover:bg-yellow-50' },
-  { id: '19', name: 'Tap', url: 'https://tap.lattechi.space', telegramUrl: generateTelegramUrl('https://tap.lattechi.space'), emoji: '💧', description: 'Сантехніка', accent: 'hover:bg-blue-50' },
-  { id: '20', name: 'Kul', url: 'https://kul.lattechi.space', telegramUrl: generateTelegramUrl('https://kul.lattechi.space'), emoji: '🎁', description: 'Подарунки', accent: 'hover:bg-red-50' },
-];
 
 declare global {
   interface Window {
@@ -57,13 +29,32 @@ declare global {
 
 export default function TopTrendShop() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Ініціалізуємо Telegram WebApp
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
     }
+
+    // Завантажуємо продукти з API
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/products');
+      const data = await res.json();
+      setProducts(data);
+      // Логування для дебагу
+      console.log('Products loaded:', data.map((p: Product) => ({ id: p.id, name: p.name, bgImage: p.backgroundImage })));
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleProductClick = (url: string, telegramUrl?: string) => {
     if (typeof window !== 'undefined') {
@@ -106,10 +97,7 @@ export default function TopTrendShop() {
 
       {/* Hero Section */}
       <section className="container mx-auto px-6 py-20 max-w-3xl text-center">
-        <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 mb-6">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-sm font-medium text-gray-700">Каталог відкритий</span>
-        </div>
+
         
         <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
           Привіт! 👋
@@ -125,64 +113,69 @@ export default function TopTrendShop() {
 
       {/* Products Grid */}
       <section className="container mx-auto px-6 pb-24">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
-          {products.map((product) => (
-            <button
-              key={product.id}
-              className={`group relative bg-white border-2 border-gray-100 rounded-3xl p-7 text-left transition-all duration-300 hover:border-gray-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-gray-200/50 ${product.accent}`}
-              onMouseEnter={() => setHoveredId(product.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              onClick={() => handleProductClick(product.url, product.telegramUrl)}
-            >
-              {/* Emoji with background */}
-              <div className="relative mb-5">
-                <div className="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="text-4xl">{product.emoji}</span>
-                </div>
-                
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="text-lg text-gray-500">Завантаження...</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
+            {products.map((product) => (
+              <button
+                key={product.id}
+                className="group relative bg-white border-2 border-gray-100 rounded-3xl p-7 text-left transition-all duration-300 hover:border-gray-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-gray-200/50 overflow-hidden min-h-[280px] flex flex-col"
+                onMouseEnter={() => setHoveredId(product.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                onClick={() => handleProductClick(product.url, product.telegramUrl)}
+              >
+                {/* Background Image */}
+                {product.backgroundImage && (
+                  <div className="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity z-0 overflow-hidden rounded-3xl">
+                    <img
+                      src={product.backgroundImage}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      style={{ filter: 'blur(0.5px)' }}
+                    />
+                  </div>
+                )}
+
                 {/* Arrow indicator */}
-                <div className={`absolute -top-2 -right-2 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center transition-all duration-300 ${
+                <div className={`absolute top-4 right-4 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center transition-all duration-300 z-10 ${
                   hoveredId === product.id ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
                 }`}>
                   <ArrowUpRight className="w-4 h-4 text-white" />
                 </div>
-              </div>
 
-              {/* Content */}
-              <div className="space-y-2 mb-4">
-                <h3 className="text-xl font-bold text-gray-900 tracking-tight">
-                  {product.name}
-                </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {product.description}
-                </p>
-              </div>
-
-              {/* URL chip */}
-              <div className="mt-4 mb-3">
-                <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2.5 rounded-full font-medium text-sm border border-blue-200 transition-all group-hover:bg-blue-100 group-hover:shadow-md">
-                  <span className="truncate max-w-48">
-                    {product.telegramUrl ? product.telegramUrl.replace('t.me/', '') : product.url.replace('https://', '').replace('www.', '')}
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 flex-shrink-0" />
+                {/* Title with background */}
+                <div className="relative z-10 mt-0 mb-auto">
+                  <h3 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight inline-block px-4 py-2 bg-white/85 backdrop-blur-sm rounded-lg">
+                    {product.name}
+                  </h3>
                 </div>
-              </div>
-              
-              {/* CTA Button */}
-              <div className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl px-6 py-4 text-lg font-extrabold text-center transition-all duration-300 group-hover:from-indigo-700 group-hover:to-purple-700 group-hover:shadow-2xl group-hover:scale-105 group-active:scale-95">
-                <span className="flex items-center justify-center gap-2">
-                  Перейти до товару
-                  <ArrowUpRight className="w-6 h-6" />
-                </span>
-              </div>
-              
-              {/* Bottom accent line */}
-              <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-gray-900 to-gray-600 rounded-b-3xl transition-all duration-300 ${
-                hoveredId === product.id ? 'opacity-100' : 'opacity-0'
-              }`}></div>
-            </button>
-          ))}
-        </div>
+
+                {/* Content */}
+                <div className="space-y-2 mb-auto relative z-10 mt-4">
+                  <p className="text-sm md:text-base text-gray-700 leading-relaxed inline-block px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-lg">
+                    {product.description}
+                  </p>
+                </div>
+
+                {/* CTA Button */}
+                <div className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl px-4 py-2.5 text-sm font-medium text-center transition-all duration-300 group-hover:from-gray-700 group-hover:to-gray-800 group-hover:shadow-lg group-hover:scale-[1.02] group-active:scale-95 relative z-10 mt-auto pt-4">
+                  <span className="flex items-center justify-center gap-2">
+                    Перейти до товару
+                    <ArrowUpRight className="w-4 h-4" />
+                  </span>
+                </div>
+                
+                {/* Bottom accent line */}
+                <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-gray-900 to-gray-600 rounded-b-3xl transition-all duration-300 z-10 ${
+                  hoveredId === product.id ? 'opacity-100' : 'opacity-0'
+                }`}></div>
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Footer */}
