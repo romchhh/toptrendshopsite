@@ -386,7 +386,10 @@ function ProductForm({
         {formData.backgroundImage && (
           <div className="mt-2">
             <img
-              src={formData.backgroundImage}
+              src={formData.backgroundImage.startsWith('/uploads/') 
+                ? `/api${formData.backgroundImage}` 
+                : formData.backgroundImage
+              }
               alt="Preview"
               className="w-full h-24 object-cover rounded-lg"
             />

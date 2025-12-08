@@ -130,7 +130,12 @@ export default function TopTrendShop() {
                 {product.backgroundImage && (
                   <div className="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity z-0 overflow-hidden rounded-3xl">
                     <img
-                      src={product.backgroundImage}
+                      src={product.backgroundImage.startsWith('/uploads/') 
+                        ? `/api${product.backgroundImage}` 
+                        : product.backgroundImage.startsWith('/api/uploads/')
+                        ? product.backgroundImage
+                        : product.backgroundImage
+                      }
                       alt={product.name}
                       className="w-full h-full object-cover"
                       style={{ filter: 'blur(0.5px)' }}
