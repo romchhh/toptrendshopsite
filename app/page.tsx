@@ -171,7 +171,7 @@ export default function TopTrendShop() {
                 {/* CTA Button */}
                 <div className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl px-4 py-2.5 text-sm font-medium text-center transition-all duration-300 group-hover:from-gray-700 group-hover:to-gray-800 group-hover:shadow-lg group-hover:scale-[1.02] group-active:scale-95 relative z-10 mt-auto pt-4">
                   <span className="flex items-center justify-center gap-2">
-                    Перейти до товару
+                    {product.name}
                     <ArrowUpRight className="w-4 h-4" />
                   </span>
                 </div>
