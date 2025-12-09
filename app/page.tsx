@@ -128,7 +128,7 @@ export default function TopTrendShop() {
               >
                 {/* Background Image */}
                 {product.backgroundImage && (
-                  <div className="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity z-0 overflow-hidden rounded-3xl">
+                  <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
                     <img
                       src={product.backgroundImage.startsWith('/uploads/') 
                         ? `/api${product.backgroundImage}` 
