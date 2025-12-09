@@ -154,13 +154,6 @@ export default function TopTrendShop() {
                   <ArrowUpRight className="w-4 h-4 text-white" />
                 </div>
 
-                {/* Title with background */}
-                <div className="relative z-10 mt-0 mb-auto">
-                  <h3 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight inline-block px-4 py-2 bg-white/85 backdrop-blur-sm rounded-lg">
-                    {product.name}
-                  </h3>
-                </div>
-
                 {/* Content */}
                 <div className="space-y-2 mb-auto relative z-10 mt-4">
                   <p className="text-sm md:text-base text-gray-700 leading-relaxed inline-block px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-lg">
