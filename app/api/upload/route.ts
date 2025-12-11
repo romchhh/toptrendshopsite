@@ -3,6 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { getAuthUser } from '@/lib/middleware-auth';
+import sharp from 'sharp';
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,23 +59,47 @@ export async function POST(request: NextRequest) {
     }
 
     const timestamp = Date.now();
-    // Зберігаємо розширення файлу та очищаємо ім'я від спеціальних символів
+    // Очищаємо ім'я від спеціальних символів
     const originalName = file.name;
     const extension = originalName.split('.').pop()?.toLowerCase() || '';
     const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.')) || originalName;
     const sanitizedName = nameWithoutExt.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filename = `${timestamp}-${sanitizedName}.${extension}`;
     
-    console.log('Original filename:', originalName, 'Sanitized:', filename);
     const uploadsDir = join(process.cwd(), 'public', 'uploads');
-    const filePath = join(uploadsDir, filename);
-
+    
     // Створюємо директорію, якщо вона не існує
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true });
     }
 
-    await writeFile(filePath, buffer);
+    // Конвертуємо в webp (крім SVG)
+    let filename: string;
+    let outputBuffer: Buffer;
+    
+    if (extension === 'svg') {
+      // SVG зберігаємо як є
+      filename = `${timestamp}-${sanitizedName}.svg`;
+      outputBuffer = buffer;
+    } else {
+      // Конвертуємо в webp
+      filename = `${timestamp}-${sanitizedName}.webp`;
+      try {
+        outputBuffer = await sharp(buffer)
+          .webp({ quality: 85 })
+          .toBuffer();
+        console.log('Image converted to webp, original size:', buffer.length, 'webp size:', outputBuffer.length);
+      } catch (sharpError) {
+        console.error('Sharp conversion error:', sharpError);
+        // Якщо не вдалося конвертувати, зберігаємо оригінал
+        filename = `${timestamp}-${sanitizedName}.${extension}`;
+        outputBuffer = buffer;
+      }
+    }
+    
+    console.log('Original filename:', originalName, 'Final filename:', filename);
+    const filePath = join(uploadsDir, filename);
+
+    await writeFile(filePath, outputBuffer);
 
     // Перевіряємо, чи файл реально створено
     const fs = require('fs');

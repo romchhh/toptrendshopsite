@@ -13,6 +13,8 @@ interface Product {
   accent: string;
   backgroundImage?: string;
   price?: string;
+  oldPrice?: string;
+  discountPercent?: number;
   category?: string;
   isNew?: boolean | number;
 }
@@ -670,8 +672,16 @@ export default function TopTrendShop() {
                       <span className="text-gray-400 text-xs font-medium">Немає фото</span>
                     </div>
                   )}
-                  {/* New Badge */}
-                  {(product.isNew === true || product.isNew === 1) && (
+                  {/* Discount Badge - на зображенні */}
+                  {product.discountPercent && product.oldPrice && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <span className="inline-flex items-center justify-center px-2.5 py-1 bg-red-800 text-white text-sm font-bold rounded shadow-lg">
+                        -{product.discountPercent}%
+                      </span>
+                    </div>
+                  )}
+                  {/* New Badge - якщо немає знижки */}
+                  {!(product.discountPercent && product.oldPrice) && (product.isNew === true || product.isNew === 1) && (
                     <div className="absolute top-2 left-2 z-10">
                       <Image 
                         src="/New-Icon-PNG-Isolated-Pic.png" 
@@ -691,8 +701,8 @@ export default function TopTrendShop() {
                     <Heart 
                       className={`w-4 h-4 transition-all ${
                         isFavorite(product.id) 
-                          ? 'fill-red-500 text-red-500' 
-                          : 'text-gray-400 hover:text-red-400'
+                          ? 'fill-red-700 text-red-700' 
+                          : 'text-gray-400 hover:text-red-600'
                       }`}
                     />
                   </button>
@@ -700,16 +710,25 @@ export default function TopTrendShop() {
 
                 {/* Product Info */}
                 <div className="p-4 flex flex-col flex-1 bg-white">
-                  <h3 className="text-base font-medium text-gray-700 line-clamp-2 leading-snug mb-0 text-left min-h-[3.5rem]">
+                  <h3 className="text-base font-medium text-gray-700 line-clamp-2 leading-snug -mb-4 text-left min-h-[2.5rem]">
                     {product.name}
                   </h3>
-                  {product.price && (
-                    <div className="mt-auto -mt-1">
-                      <p className="text-2xl font-bold text-gray-900 text-left">
+                  <div className="mt-auto">
+                    {product.oldPrice && product.price ? (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-xl font-bold rounded-full">
+                          {product.price} ₴
+                        </span>
+                        <span className="text-lg text-gray-400 line-through">
+                          {product.oldPrice} ₴
+                        </span>
+                      </div>
+                    ) : product.price ? (
+                      <span className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-xl font-bold rounded-full">
                         {product.price} ₴
-                      </p>
-                    </div>
-                  )}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               </button>
             ))}
@@ -770,14 +789,14 @@ export default function TopTrendShop() {
               onClick={() => { setActiveTab('favorites'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               className={`flex flex-col items-center justify-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 relative ${
                 activeTab === 'favorites' 
-                  ? 'text-red-600 bg-red-50 scale-105' 
-                  : 'text-gray-400 hover:text-red-400'
+                  ? 'text-red-800 bg-red-50 scale-105' 
+                  : 'text-gray-400 hover:text-red-600'
               }`}
             >
-              <Heart className={`w-6 h-6 ${activeTab === 'favorites' ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
-              <span className={`text-sm font-semibold ${activeTab === 'favorites' ? 'text-red-600' : 'text-gray-500'}`}>Обране</span>
+              <Heart className={`w-6 h-6 ${activeTab === 'favorites' ? 'fill-red-700 text-red-700' : 'text-gray-400'}`} />
+              <span className={`text-sm font-semibold ${activeTab === 'favorites' ? 'text-red-800' : 'text-gray-500'}`}>Обране</span>
               {favorites.length > 0 && (
-                <span className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ${
+                <span className={`absolute -top-1 -right-1 bg-red-700 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 ${
                   activeTab === 'favorites' ? 'ring-2 ring-white' : ''
                 }`}>
                   {favorites.length}

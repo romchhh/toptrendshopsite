@@ -71,6 +71,22 @@ export function initDatabase() {
     }
   }
 
+  try {
+    db.exec(`ALTER TABLE products ADD COLUMN oldPrice TEXT`);
+  } catch (e: any) {
+    if (!e.message.includes('duplicate column')) {
+      console.error('Error adding oldPrice column:', e);
+    }
+  }
+
+  try {
+    db.exec(`ALTER TABLE products ADD COLUMN discountPercent INTEGER`);
+  } catch (e: any) {
+    if (!e.message.includes('duplicate column')) {
+      console.error('Error adding discountPercent column:', e);
+    }
+  }
+
   // Перевірка чи є продукти, якщо ні - додаємо початкові дані
   const count = db.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number };
   

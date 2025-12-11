@@ -15,15 +15,15 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, url, telegramUrl, description, accent, backgroundImage, price, category, isNew } = body;
+    const { name, url, telegramUrl, description, accent, backgroundImage, price, oldPrice, discountPercent, category, isNew } = body;
 
     console.log('Updating product:', id, 'Background image:', backgroundImage, 'isNew:', isNew);
 
     db.prepare(`
-      UPDATE products 
-      SET name = ?, url = ?, telegramUrl = ?, emoji = ?, description = ?, accent = ?, backgroundImage = ?, price = ?, category = ?, isNew = ?, updatedAt = CURRENT_TIMESTAMP
+      UPDATE products
+      SET name = ?, url = ?, telegramUrl = ?, emoji = ?, description = ?, accent = ?, backgroundImage = ?, price = ?, oldPrice = ?, discountPercent = ?, category = ?, isNew = ?, updatedAt = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).run(name, url, telegramUrl || null, '📦', description, accent || null, backgroundImage || null, price || null, category || null, isNew ? 1 : 0, id);
+    `).run(name, url, telegramUrl || null, '📦', description, accent || null, backgroundImage || null, price || null, oldPrice || null, discountPercent || null, category || null, isNew ? 1 : 0, id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
