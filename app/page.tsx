@@ -51,6 +51,7 @@ export default function TopTrendShop() {
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [priceFilterActive, setPriceFilterActive] = useState(false);
+  const [visibleProductsCount, setVisibleProductsCount] = useState(10);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -221,7 +222,7 @@ export default function TopTrendShop() {
   });
 
   // Сортуємо продукти
-  filteredProducts = [...filteredProducts].sort((a, b) => {
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === 'name') {
       return a.name.localeCompare(b.name);
     }
@@ -233,6 +234,14 @@ export default function TopTrendShop() {
     // newest - залишаємо як є (вже відсортовано з API)
     return 0;
   });
+
+  // Застосовуємо пагінацію до відсортованих товарів
+  const displayProducts = sortedProducts.slice(0, visibleProductsCount);
+
+  // Скидаємо лічильник при зміні фільтрів
+  useEffect(() => {
+    setVisibleProductsCount(10);
+  }, [activeTab, selectedCategory, searchQuery, priceFilterActive, sortBy]);
 
   const toggleFavorite = (productId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -389,7 +398,7 @@ export default function TopTrendShop() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-gray-900 placeholder:text-gray-400 text-base font-medium shadow-sm transition-all bg-white"
             />
-          </div>
+        </div>
         </section>
       )}
 
@@ -440,11 +449,6 @@ export default function TopTrendShop() {
             )}
           </div>
           <div className="flex items-center gap-3">
-            {!loading && activeTab !== 'favorites' && (
-              <p className="text-sm font-medium text-gray-500">
-                Знайдено: {filteredProducts.length}
-              </p>
-            )}
             {activeTab === 'catalog' && (
               <button
                 onClick={() => setShowFilters(!showFilters)}
@@ -465,7 +469,7 @@ export default function TopTrendShop() {
                   Ціна: від <span className="text-gray-900 font-bold">{Math.max(minPrice, Math.min(priceRange[0], maxPrice)).toLocaleString('uk-UA')}</span> до <span className="text-gray-900 font-bold">{Math.max(minPrice, Math.min(priceRange[1], maxPrice)).toLocaleString('uk-UA')}</span> ₴
                 </p>
                 {priceFilterActive && (
-                  <button
+            <button
                     onClick={() => {
                       setPriceRange([minPrice, maxPrice]);
                       setPriceFilterActive(false);
@@ -589,7 +593,7 @@ export default function TopTrendShop() {
                     </div>
                     <h3 className="text-lg font-bold text-gray-900 group-hover:text-gray-900">
                       {category.name}
-                    </h3>
+                </h3>
                   </div>
                   {category.description && (
                     <p className="text-sm text-gray-500 line-clamp-2">
@@ -615,7 +619,7 @@ export default function TopTrendShop() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
               <div className="text-lg font-medium text-gray-400">Завантаження...</div>
             </div>
-          ) : filteredProducts.length === 0 ? (
+          ) : sortedProducts.length === 0 ? (
             <div className="text-center py-20">
               <div className="mb-4">
                 {activeTab === 'favorites' ? (
@@ -636,15 +640,16 @@ export default function TopTrendShop() {
               </div>
             </div>
           ) : (
+            <>
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 max-w-7xl mx-auto">
-            {filteredProducts.map((product) => (
+            {displayProducts.map((product) => (
               <button
                 key={product.id}
-                className="group relative bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-gray-300/40 hover:-translate-y-2 hover:border-gray-300 active:translate-y-0 active:scale-[0.97] flex flex-col"
+                className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-gray-300 active:scale-[0.98] flex flex-col"
                 onClick={() => handleProductClick(product.url, product.telegramUrl)}
               >
                 {/* Product Image */}
-                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+                <div className="relative w-full aspect-square bg-white overflow-hidden">
                   {product.backgroundImage ? (
                     <img
                       src={product.backgroundImage.startsWith('/uploads/') 
@@ -667,11 +672,14 @@ export default function TopTrendShop() {
                   )}
                   {/* New Badge */}
                   {(product.isNew === true || product.isNew === 1) && (
-                    <div className="absolute top-3 left-3 z-10">
-                      <span className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-red-500 via-red-600 to-red-700 text-white text-xs font-extrabold rounded-full shadow-xl border-2 border-white/30 backdrop-blur-sm animate-pulse">
-                        <span className="w-2 h-2 bg-white rounded-full mr-2 animate-ping"></span>
-                        НОВИНКА
-                      </span>
+                    <div className="absolute top-2 left-2 z-10">
+                      <Image 
+                        src="/New-Icon-PNG-Isolated-Pic.png" 
+                        alt="Новинка" 
+                        width={60} 
+                        height={60}
+                        className="object-contain drop-shadow-lg"
+                      />
                     </div>
                   )}
                   {/* Favorite Button */}
@@ -688,32 +696,35 @@ export default function TopTrendShop() {
                       }`}
                     />
                   </button>
-                </div>
+              </div>
 
                 {/* Product Info */}
-                <div className="p-4 flex flex-col flex-1 bg-gradient-to-b from-white to-gray-50/50">
-                  <div className="mb-2">
-                    <h3 className="text-[15px] font-bold text-gray-900 line-clamp-2 leading-snug min-h-[2.8rem] group-hover:text-gray-800 transition-colors text-left">
-                      {product.name}
-                    </h3>
-                  </div>
+                <div className="p-4 flex flex-col flex-1 bg-white">
+                  <h3 className="text-base font-medium text-gray-700 line-clamp-2 leading-snug mb-0 text-left min-h-[3.5rem]">
+                    {product.name}
+                  </h3>
                   {product.price && (
-                    <div className="mb-2 text-left">
-                      <p className="text-xl font-extrabold text-gray-900 tracking-tight">
+                    <div className="mt-auto -mt-1">
+                      <p className="text-2xl font-bold text-gray-900 text-left">
                         {product.price} ₴
                       </p>
                     </div>
                   )}
-                  <div className="mt-auto pt-2">
-                    <div className="w-full bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 text-white rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 group-hover:from-gray-900 group-hover:via-black group-hover:to-gray-900 group-hover:shadow-lg group-hover:scale-[1.02] transition-all duration-200 shadow-md">
-                      <span>Детальніше</span>
-                      <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                    </div>
-                  </div>
                 </div>
               </button>
             ))}
             </div>
+            {sortedProducts.length > visibleProductsCount && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => setVisibleProductsCount(prev => prev + 10)}
+                  className="px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+                >
+                  Показати ще
+                </button>
+              </div>
+            )}
+            </>
           )}
         </section>
       )}
