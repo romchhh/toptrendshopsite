@@ -15,15 +15,20 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, url, telegramUrl, description, accent, backgroundImage, price, oldPrice, discountPercent, category, isNew } = body;
+    const { name, url, telegramUrl, description, accent, backgroundImage, price, oldPrice, discountPercent, category, isNew, displayOrder } = body;
 
-    console.log('Updating product:', id, 'Background image:', backgroundImage, 'isNew:', isNew);
+    console.log('Updating product:', id, 'Background image:', backgroundImage, 'isNew:', isNew, 'displayOrder:', displayOrder);
+
+    // Завжди зберігаємо displayOrder - якщо передано, використовуємо його, інакше залишаємо поточне значення
+    // Спочатку отримуємо поточний displayOrder
+    const currentProduct = db.prepare('SELECT displayOrder FROM products WHERE id = ?').get(id) as { displayOrder: number | null } | undefined;
+    const finalDisplayOrder = displayOrder !== undefined && displayOrder !== null ? displayOrder : (currentProduct?.displayOrder ?? 0);
 
     db.prepare(`
       UPDATE products
-      SET name = ?, url = ?, telegramUrl = ?, emoji = ?, description = ?, accent = ?, backgroundImage = ?, price = ?, oldPrice = ?, discountPercent = ?, category = ?, isNew = ?, updatedAt = CURRENT_TIMESTAMP
+      SET name = ?, url = ?, telegramUrl = ?, emoji = ?, description = ?, accent = ?, backgroundImage = ?, price = ?, oldPrice = ?, discountPercent = ?, category = ?, isNew = ?, displayOrder = ?, updatedAt = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).run(name, url, telegramUrl || null, '📦', description, accent || null, backgroundImage || null, price || null, oldPrice || null, discountPercent || null, category || null, isNew ? 1 : 0, id);
+    `).run(name, url, telegramUrl || null, '📦', description, accent || null, backgroundImage || null, price || null, oldPrice || null, discountPercent || null, category || null, isNew ? 1 : 0, finalDisplayOrder, id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

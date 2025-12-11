@@ -37,6 +37,7 @@ interface Category {
   id: string;
   name: string;
   description?: string;
+  image?: string;
 }
 
 export default function TopTrendShop() {
@@ -233,7 +234,12 @@ export default function TopTrendShop() {
       const priceB = parseInt(b.price?.replace(/\D/g, '') || '0');
       return priceA - priceB;
     }
-    // newest - залишаємо як є (вже відсортовано з API)
+    // newest - сортуємо за displayOrder (менші значення = вище), якщо немає displayOrder - за createdAt
+    const orderA = (a as any).displayOrder ?? 0;
+    const orderB = (b as any).displayOrder ?? 0;
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
     return 0;
   });
 
@@ -589,14 +595,24 @@ export default function TopTrendShop() {
                   }}
                   className="group relative bg-white border-2 border-gray-200 rounded-2xl p-6 text-left transition-all duration-300 hover:border-gray-900 hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]"
                 >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center group-hover:from-gray-900 group-hover:to-gray-800 transition-all">
-                      <Layers className="w-6 h-6 text-gray-600 group-hover:text-white transition-colors" />
+                  {category.image ? (
+                    <div className="mb-4 rounded-xl overflow-hidden">
+                      <Image
+                        src={category.image}
+                        alt={category.name}
+                        width={300}
+                        height={200}
+                        className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-gray-900">
-                      {category.name}
-                </h3>
-                  </div>
+                  ) : (
+                    <div className="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center mb-4 group-hover:from-gray-900 group-hover:to-gray-800 transition-all">
+                      <Layers className="w-12 h-12 text-gray-600 group-hover:text-white transition-colors" />
+                    </div>
+                  )}
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-gray-900 mb-3">
+                    {category.name}
+                  </h3>
                   {category.description && (
                     <p className="text-sm text-gray-500 line-clamp-2">
                       {category.description}
@@ -645,9 +661,9 @@ export default function TopTrendShop() {
             <>
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 max-w-7xl mx-auto">
             {displayProducts.map((product) => (
-              <button
+              <div
                 key={product.id}
-                className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-gray-300 active:scale-[0.98] flex flex-col"
+                className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-gray-300 active:scale-[0.98] flex flex-col cursor-pointer"
                 onClick={() => handleProductClick(product.url, product.telegramUrl)}
               >
                 {/* Product Image */}
@@ -730,7 +746,7 @@ export default function TopTrendShop() {
                     ) : null}
                   </div>
                 </div>
-              </button>
+              </div>
             ))}
             </div>
             {sortedProducts.length > visibleProductsCount && (

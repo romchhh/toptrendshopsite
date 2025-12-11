@@ -15,7 +15,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, description } = body;
+    const { name, description, image } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -26,9 +26,9 @@ export async function PUT(
 
     db.prepare(`
       UPDATE categories 
-      SET name = ?, description = ?, updatedAt = CURRENT_TIMESTAMP
+      SET name = ?, description = ?, image = ?, updatedAt = CURRENT_TIMESTAMP
       WHERE id = ?
-    `).run(name, description || null, id);
+    `).run(name, description || null, image || null, id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

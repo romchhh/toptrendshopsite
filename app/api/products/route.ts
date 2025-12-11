@@ -5,7 +5,7 @@ import { getAuthUser } from '@/lib/middleware-auth';
 // GET - отримати всі продукти
 export async function GET() {
   try {
-    const products = db.prepare('SELECT * FROM products ORDER BY createdAt DESC').all();
+    const products = db.prepare('SELECT * FROM products ORDER BY displayOrder ASC, createdAt DESC').all();
     return NextResponse.json(products);
   } catch (error) {
     return NextResponse.json(
@@ -36,9 +36,13 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating product:', { id, name, url, accent: accent || 'hover:bg-blue-50', isNew });
 
+    // Отримуємо мінімальний displayOrder і віднімаємо 1, щоб новий товар був зверху
+    const minOrderResult = db.prepare('SELECT MIN(displayOrder) as minOrder FROM products').get() as { minOrder: number | null };
+    const newDisplayOrder = (minOrderResult.minOrder ?? 0) - 1;
+
     db.prepare(`
-      INSERT INTO products (id, name, url, telegramUrl, emoji, description, accent, backgroundImage, price, oldPrice, discountPercent, category, isNew)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (id, name, url, telegramUrl, emoji, description, accent, backgroundImage, price, oldPrice, discountPercent, category, isNew, displayOrder)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, 
       name, 
@@ -52,7 +56,8 @@ export async function POST(request: NextRequest) {
       oldPrice || null,
       discountPercent || null,
       category || null,
-      isNew ? 1 : 0
+      isNew ? 1 : 0,
+      newDisplayOrder
     );
 
     return NextResponse.json({ success: true });

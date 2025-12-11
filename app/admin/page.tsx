@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Plus, Edit2, Trash2, LogOut, Save, X, Package, FolderTree } from 'lucide-react';
+import { Plus, Edit2, Trash2, LogOut, Save, X, Package, FolderTree, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -18,12 +18,15 @@ interface Product {
   discountPercent?: number;
   category?: string;
   isNew?: boolean | number;
+  displayOrder?: number;
 }
 
 interface Category {
   id: string;
   name: string;
   description?: string;
+  image?: string;
+  displayOrder?: number;
 }
 
 type AdminTab = 'products' | 'categories';
@@ -36,6 +39,7 @@ export default function AdminPanel() {
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [uploadingCategoryImage, setUploadingCategoryImage] = useState<string | null>(null);
   const router = useRouter();
 
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -57,7 +61,30 @@ export default function AdminPanel() {
     fetchProducts();
     fetchCategories();
     checkAuth();
+    // Ініціалізуємо displayOrder для товарів, якщо потрібно
+    initProductOrder();
   }, []);
+
+  const initProductOrder = async () => {
+    try {
+      // Перевіряємо чи є товари з displayOrder = null або undefined
+      const res = await fetch('/api/products');
+      const products = await res.json();
+      
+      if (products.length === 0) return;
+      
+      // Перевіряємо чи є товари з displayOrder = null або undefined (не ініціалізовані)
+      const hasNull = products.some((p: any) => p.displayOrder === null || p.displayOrder === undefined);
+      
+      if (hasNull) {
+        // Ініціалізуємо порядок тільки для товарів з null displayOrder
+        await fetch('/api/products/init-order', { method: 'POST' });
+        await fetchProducts();
+      }
+    } catch (error) {
+      console.error('Error initializing product order:', error);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -165,6 +192,8 @@ export default function AdminPanel() {
           return;
         }
       } else if (editingId) {
+        // Знаходимо поточний товар щоб зберегти displayOrder
+        const currentProduct = products.find(p => p.id === editingId);
         const response = await fetch(`/api/products/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -172,6 +201,7 @@ export default function AdminPanel() {
             ...formData,
             emoji: '📦',
             accent: formData.accent || 'hover:bg-blue-50',
+            displayOrder: currentProduct?.displayOrder,
           }),
         });
         const result = await response.json();
@@ -198,6 +228,26 @@ export default function AdminPanel() {
     } catch (error) {
       console.error('Error deleting product:', error);
       alert('Помилка видалення');
+    }
+  };
+
+  const handleOrderChange = async (id: string, direction: 'up' | 'down') => {
+    try {
+      const response = await fetch(`/api/products/${id}/order`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ direction }),
+      });
+      
+      const result = await response.json();
+      if (!response.ok) {
+        alert(result.error || 'Помилка зміни порядку');
+        return;
+      }
+      await fetchProducts();
+    } catch (error) {
+      console.error('Error changing order:', error);
+      alert('Помилка зміни порядку');
     }
   };
 
@@ -278,6 +328,7 @@ export default function AdminPanel() {
       id: '',
       name: '',
       description: '',
+      image: '',
     });
   };
 
@@ -294,7 +345,60 @@ export default function AdminPanel() {
       id: '',
       name: '',
       description: '',
+      image: '',
     });
+  };
+
+  const handleCategoryImageUpload = async (categoryId: string, file: File) => {
+    setUploadingCategoryImage(categoryId);
+    try {
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        alert('Файл занадто великий. Максимальний розмір: 10 МБ');
+        setUploadingCategoryImage(null);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Невідома помилка' }));
+        alert(errorData.error || `Помилка завантаження: ${res.status}`);
+        setUploadingCategoryImage(null);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.url) {
+        if (editingCategoryId === categoryId || categoryId === 'new') {
+          setCategoryFormData((prev) => ({ ...prev, image: data.url }));
+        } else {
+          const currentCategory = categories.find(c => c.id === categoryId);
+          if (currentCategory) {
+            const response = await fetch(`/api/categories/${categoryId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ...currentCategory, image: data.url }),
+            });
+            if (response.ok) {
+              await fetchCategories();
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading category image:', error);
+      alert('Помилка завантаження зображення');
+    } finally {
+      setUploadingCategoryImage(null);
+    }
   };
 
   const handleCategorySave = async () => {
@@ -354,6 +458,26 @@ export default function AdminPanel() {
     } catch (error) {
       console.error('Error deleting category:', error);
       alert('Помилка видалення');
+    }
+  };
+
+  const handleCategoryOrderChange = async (id: string, direction: 'up' | 'down') => {
+    try {
+      const response = await fetch(`/api/categories/${id}/order`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ direction }),
+      });
+      
+      const result = await response.json();
+      if (!response.ok) {
+        alert(result.error || 'Помилка зміни порядку');
+        return;
+      }
+      await fetchCategories();
+    } catch (error) {
+      console.error('Error changing category order:', error);
+      alert('Помилка зміни порядку');
     }
   };
 
@@ -436,7 +560,7 @@ export default function AdminPanel() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <div key={product.id} className="bg-white rounded-xl border border-gray-200 p-6">
                   {editingId === product.id ? (
                     <ProductForm
@@ -449,7 +573,33 @@ export default function AdminPanel() {
                     />
                   ) : (
                     <>
-                      <div className="flex items-start justify-end mb-4">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleOrderChange(product.id, 'up')}
+                            disabled={index === 0}
+                            className={`p-2 rounded-lg transition-colors ${
+                              index === 0
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-green-600 hover:bg-green-50'
+                            }`}
+                            title="Перемістити вверх"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleOrderChange(product.id, 'down')}
+                            disabled={index === products.length - 1}
+                            className={`p-2 rounded-lg transition-colors ${
+                              index === products.length - 1
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-green-600 hover:bg-green-50'
+                            }`}
+                            title="Перемістити вниз"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </button>
+                        </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleEdit(product)}
@@ -516,11 +666,13 @@ export default function AdminPanel() {
                 setFormData={setCategoryFormData}
                 onSave={handleCategorySave}
                 onCancel={handleCategoryCancel}
+                onImageUpload={(file) => handleCategoryImageUpload('new', file)}
+                uploading={uploadingCategoryImage === 'new'}
               />
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map((category) => (
+              {categories.map((category, index) => (
                 <div key={category.id} className="bg-white rounded-xl border border-gray-200 p-6">
                   {editingCategoryId === category.id ? (
                     <CategoryForm
@@ -528,10 +680,38 @@ export default function AdminPanel() {
                       setFormData={setCategoryFormData}
                       onSave={handleCategorySave}
                       onCancel={handleCategoryCancel}
+                      onImageUpload={(file) => handleCategoryImageUpload(category.id, file)}
+                      uploading={uploadingCategoryImage === category.id}
                     />
                   ) : (
                     <>
-                      <div className="flex items-start justify-end mb-4">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleCategoryOrderChange(category.id, 'up')}
+                            disabled={index === 0}
+                            className={`p-2 rounded-lg transition-colors ${
+                              index === 0
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-green-600 hover:bg-green-50'
+                            }`}
+                            title="Перемістити вверх"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleCategoryOrderChange(category.id, 'down')}
+                            disabled={index === categories.length - 1}
+                            className={`p-2 rounded-lg transition-colors ${
+                              index === categories.length - 1
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-green-600 hover:bg-green-50'
+                            }`}
+                            title="Перемістити вниз"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </button>
+                        </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleCategoryEdit(category)}
@@ -547,6 +727,17 @@ export default function AdminPanel() {
                           </button>
                         </div>
                       </div>
+                      {category.image && (
+                        <div className="mb-4 rounded-lg overflow-hidden">
+                          <Image
+                            src={category.image}
+                            alt={category.name}
+                            width={200}
+                            height={150}
+                            className="w-full h-32 object-cover"
+                          />
+                        </div>
+                      )}
                       <h3 className="text-lg font-bold text-gray-900 mb-2">{category.name}</h3>
                       {category.description && (
                         <p className="text-sm text-gray-600 mb-4">{category.description}</p>
@@ -569,12 +760,23 @@ function CategoryForm({
   setFormData,
   onSave,
   onCancel,
+  onImageUpload,
+  uploading = false,
 }: {
   formData: Partial<Category>;
   setFormData: (data: Partial<Category>) => void;
   onSave: () => void;
   onCancel: () => void;
+  onImageUpload?: (file: File) => void;
+  uploading?: boolean;
 }) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onImageUpload) {
+      onImageUpload(file);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -606,6 +808,31 @@ function CategoryForm({
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
           rows={3}
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Зображення</label>
+        {formData.image && (
+          <div className="mb-2 rounded-lg overflow-hidden">
+            <Image
+              src={formData.image}
+              alt="Category preview"
+              width={200}
+              height={150}
+              className="w-full h-32 object-cover"
+            />
+          </div>
+        )}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={uploading}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+        />
+        {uploading && (
+          <p className="text-xs text-gray-500 mt-1">Завантаження...</p>
+        )}
       </div>
 
       <div className="flex gap-2 pt-2">

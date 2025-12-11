@@ -5,7 +5,7 @@ import { getAuthUser } from '@/lib/middleware-auth';
 // GET - отримати всі категорії
 export async function GET() {
   try {
-    const categories = db.prepare('SELECT * FROM categories ORDER BY name ASC').all();
+    const categories = db.prepare('SELECT * FROM categories ORDER BY displayOrder ASC, name ASC').all();
     return NextResponse.json(categories);
   } catch (error) {
     return NextResponse.json(
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, description } = body;
+    const { id, name, description, image } = body;
 
     if (!id || !name) {
       return NextResponse.json(
@@ -33,10 +33,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Отримуємо мінімальний displayOrder і віднімаємо 1, щоб нова категорія була зверху
+    const minOrderResult = db.prepare('SELECT MIN(displayOrder) as minOrder FROM categories').get() as { minOrder: number | null };
+    const newDisplayOrder = (minOrderResult.minOrder ?? 0) - 1;
+
     db.prepare(`
-      INSERT INTO categories (id, name, description)
-      VALUES (?, ?, ?)
-    `).run(id, name, description || null);
+      INSERT INTO categories (id, name, description, image, displayOrder)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(id, name, description || null, image || null, newDisplayOrder);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

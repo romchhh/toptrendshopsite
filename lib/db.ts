@@ -87,6 +87,30 @@ export function initDatabase() {
     }
   }
 
+  try {
+    db.exec(`ALTER TABLE products ADD COLUMN displayOrder INTEGER DEFAULT 0`);
+  } catch (e: any) {
+    if (!e.message.includes('duplicate column')) {
+      console.error('Error adding displayOrder column:', e);
+    }
+  }
+
+  try {
+    db.exec(`ALTER TABLE categories ADD COLUMN image TEXT`);
+  } catch (e: any) {
+    if (!e.message.includes('duplicate column')) {
+      console.error('Error adding image column to categories:', e);
+    }
+  }
+
+  try {
+    db.exec(`ALTER TABLE categories ADD COLUMN displayOrder INTEGER DEFAULT 0`);
+  } catch (e: any) {
+    if (!e.message.includes('duplicate column')) {
+      console.error('Error adding displayOrder column to categories:', e);
+    }
+  }
+
   // Перевірка чи є продукти, якщо ні - додаємо початкові дані
   const count = db.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number };
   
