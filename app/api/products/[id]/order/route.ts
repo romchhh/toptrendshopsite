@@ -30,10 +30,32 @@ export async function PUT(
       return NextResponse.json({ error: 'Товар не знайдено' }, { status: 404 });
     }
 
+    // Якщо displayOrder null, спочатку ініціалізуємо для всіх товарів
+    if (currentProduct.displayOrder === null || currentProduct.displayOrder === undefined) {
+      const allProductsNull = db.prepare('SELECT COUNT(*) as count FROM products WHERE displayOrder IS NULL').get() as { count: number };
+      if (allProductsNull.count > 0) {
+        // Ініціалізуємо displayOrder для всіх товарів
+        const allProducts = db.prepare('SELECT id FROM products ORDER BY createdAt ASC').all() as { id: string }[];
+        const maxOrderResult = db.prepare('SELECT MAX(displayOrder) as maxOrder FROM products WHERE displayOrder IS NOT NULL').get() as { maxOrder: number | null };
+        const startOrder = (maxOrderResult.maxOrder ?? -1) + 1;
+        
+        allProducts.forEach((p, index) => {
+          const existingOrder = db.prepare('SELECT displayOrder FROM products WHERE id = ?').get(p.id) as { displayOrder: number | null };
+          if (existingOrder.displayOrder === null || existingOrder.displayOrder === undefined) {
+            db.prepare('UPDATE products SET displayOrder = ? WHERE id = ?').run(startOrder + index, p.id);
+          }
+        });
+        
+        // Оновлюємо currentProduct
+        const updatedProduct = db.prepare('SELECT displayOrder FROM products WHERE id = ?').get(id) as { displayOrder: number };
+        currentProduct.displayOrder = updatedProduct.displayOrder;
+      }
+    }
+
     // Отримуємо всі товари, відсортовані за displayOrder
     const allProducts = db.prepare(`
       SELECT id, displayOrder FROM products 
-      ORDER BY COALESCE(displayOrder, 0) ASC, createdAt DESC
+      ORDER BY COALESCE(displayOrder, 999999) ASC, createdAt DESC
     `).all() as { id: string; displayOrder: number | null }[];
 
     // Знаходимо поточний індекс товару
@@ -41,6 +63,8 @@ export async function PUT(
     if (currentIndex === -1) {
       return NextResponse.json({ error: 'Товар не знайдено в списку' }, { status: 404 });
     }
+
+    const currentOrder = currentProduct.displayOrder ?? currentIndex;
 
     if (direction === 'up') {
       if (currentIndex === 0) {
@@ -50,7 +74,6 @@ export async function PUT(
       
       // Знаходимо попередній товар
       const prevProduct = allProducts[currentIndex - 1];
-      const currentOrder = currentProduct.displayOrder ?? currentIndex;
       const prevOrder = prevProduct.displayOrder ?? (currentIndex - 1);
       
       // Міняємо місцями порядок
@@ -65,7 +88,6 @@ export async function PUT(
       
       // Знаходимо наступний товар
       const nextProduct = allProducts[currentIndex + 1];
-      const currentOrder = currentProduct.displayOrder ?? currentIndex;
       const nextOrder = nextProduct.displayOrder ?? (currentIndex + 1);
       
       // Міняємо місцями порядок
