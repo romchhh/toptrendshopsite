@@ -539,13 +539,38 @@ export default function AdminPanel() {
           <>
             <div className="mb-6 flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">Продукти</h2>
-              <button
-                onClick={handleAdd}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Додати продукт
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    if (confirm('Ініціалізувати порядок товарів? Це призначить displayOrder всім товарам.')) {
+                      try {
+                        const res = await fetch('/api/products/init-order', { method: 'POST' });
+                        const result = await res.json();
+                        if (res.ok) {
+                          alert(`Успішно! Ініціалізовано ${result.count || 0} товарів.`);
+                          await fetchProducts();
+                        } else {
+                          alert(result.error || 'Помилка ініціалізації');
+                        }
+                      } catch (error) {
+                        console.error('Error:', error);
+                        alert('Помилка ініціалізації');
+                      }
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  title="Ініціалізувати порядок товарів"
+                >
+                  🔄 Ініціалізувати порядок
+                </button>
+                <button
+                  onClick={handleAdd}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Додати продукт
+                </button>
+              </div>
             </div>
 
             {isAdding && (
@@ -651,13 +676,38 @@ export default function AdminPanel() {
           <>
             <div className="mb-6 flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">Категорії</h2>
-              <button
-                onClick={handleCategoryAdd}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Додати категорію
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    if (confirm('Ініціалізувати порядок категорій? Це призначить displayOrder всім категоріям.')) {
+                      try {
+                        const res = await fetch('/api/categories/init-order', { method: 'POST' });
+                        const result = await res.json();
+                        if (res.ok) {
+                          alert(`Успішно! Ініціалізовано ${result.count || 0} категорій.`);
+                          await fetchCategories();
+                        } else {
+                          alert(result.error || 'Помилка ініціалізації');
+                        }
+                      } catch (error) {
+                        console.error('Error:', error);
+                        alert('Помилка ініціалізації');
+                      }
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  title="Ініціалізувати порядок категорій"
+                >
+                  🔄 Ініціалізувати порядок
+                </button>
+                <button
+                  onClick={handleCategoryAdd}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Додати категорію
+                </button>
+              </div>
             </div>
 
             {isAddingCategory && (
