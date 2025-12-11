@@ -710,21 +710,21 @@ export default function TopTrendShop() {
 
                 {/* Product Info */}
                 <div className="p-4 flex flex-col flex-1 bg-white">
-                  <h3 className="text-base font-medium text-gray-700 line-clamp-2 leading-snug -mb-4 text-left min-h-[2.5rem]">
+                  <h3 className="text-base font-medium text-gray-700 line-clamp-2 leading-snug mb-2 text-left min-h-[2.5rem]">
                     {product.name}
                   </h3>
-                  <div className="mt-auto">
+                  <div className="mt-auto pt-1 flex justify-start">
                     {product.oldPrice && product.price ? (
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-xl font-bold rounded-full">
+                        <span className="inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-base font-bold rounded-full">
                           {product.price} ₴
                         </span>
-                        <span className="text-lg text-gray-400 line-through">
+                        <span className="text-sm text-gray-400 line-through">
                           {product.oldPrice} ₴
                         </span>
                       </div>
                     ) : product.price ? (
-                      <span className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-xl font-bold rounded-full">
+                      <span className="inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-base font-bold rounded-full">
                         {product.price} ₴
                       </span>
                     ) : null}
