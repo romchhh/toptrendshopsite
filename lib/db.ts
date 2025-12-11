@@ -25,10 +25,51 @@ export function initDatabase() {
       description TEXT NOT NULL,
       accent TEXT NOT NULL,
       backgroundImage TEXT,
+      price TEXT,
+      category TEXT,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Таблиця категорій
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      description TEXT,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Додаємо нові колонки якщо вони не існують (міграція)
+  try {
+    db.exec(`ALTER TABLE products ADD COLUMN price TEXT`);
+  } catch (e: any) {
+    // Колонка вже існує, ігноруємо помилку
+    if (!e.message.includes('duplicate column')) {
+      console.error('Error adding price column:', e);
+    }
+  }
+  
+  try {
+    db.exec(`ALTER TABLE products ADD COLUMN category TEXT`);
+  } catch (e: any) {
+    // Колонка вже існує, ігноруємо помилку
+    if (!e.message.includes('duplicate column')) {
+      console.error('Error adding category column:', e);
+    }
+  }
+
+  try {
+    db.exec(`ALTER TABLE products ADD COLUMN isNew INTEGER DEFAULT 0`);
+  } catch (e: any) {
+    // Колонка вже існує, ігноруємо помилку
+    if (!e.message.includes('duplicate column')) {
+      console.error('Error adding isNew column:', e);
+    }
+  }
 
   // Перевірка чи є продукти, якщо ні - додаємо початкові дані
   const count = db.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number };

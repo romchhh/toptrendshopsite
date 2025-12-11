@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, name, url, telegramUrl, description, accent, backgroundImage } = body;
+    const { id, name, url, telegramUrl, description, accent, backgroundImage, price, category, isNew } = body;
 
     // Валідація обов'язкових полів
     if (!id || !name || !url) {
@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Creating product:', { id, name, url, accent: accent || 'hover:bg-blue-50' });
+    console.log('Creating product:', { id, name, url, accent: accent || 'hover:bg-blue-50', isNew });
 
     db.prepare(`
-      INSERT INTO products (id, name, url, telegramUrl, emoji, description, accent, backgroundImage)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO products (id, name, url, telegramUrl, emoji, description, accent, backgroundImage, price, category, isNew)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, 
       name, 
@@ -47,7 +47,10 @@ export async function POST(request: NextRequest) {
       '📦', 
       description || '', 
       accent || 'hover:bg-blue-50', 
-      backgroundImage || null
+      backgroundImage || null,
+      price || null,
+      category || null,
+      isNew ? 1 : 0
     );
 
     return NextResponse.json({ success: true });

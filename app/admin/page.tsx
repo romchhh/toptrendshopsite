@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Plus, Edit2, Trash2, LogOut, Save, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, LogOut, Save, X, Package, FolderTree } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -13,10 +13,23 @@ interface Product {
   description: string;
   accent: string;
   backgroundImage?: string;
+  price?: string;
+  category?: string;
+  isNew?: boolean | number;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+type AdminTab = 'products' | 'categories';
+
 export default function AdminPanel() {
+  const [activeTab, setActiveTab] = useState<AdminTab>('products');
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -31,12 +44,26 @@ export default function AdminPanel() {
     description: '',
     accent: 'hover:bg-blue-50',
     backgroundImage: '',
+    price: '',
+    category: '',
+    isNew: false,
   });
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
     checkAuth();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      const data = await res.json();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   const checkAuth = async () => {
     const res = await fetch('/api/auth/verify');
@@ -49,7 +76,12 @@ export default function AdminPanel() {
     try {
       const res = await fetch('/api/products');
       const data = await res.json();
-      setProducts(data);
+      // Конвертуємо isNew з числа (0/1) в boolean
+      const productsWithBoolean = data.map((p: Product) => ({
+        ...p,
+        isNew: p.isNew === 1 || p.isNew === true
+      }));
+      setProducts(productsWithBoolean);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -79,6 +111,9 @@ export default function AdminPanel() {
       description: '',
       accent: 'hover:bg-blue-50',
       backgroundImage: '',
+      price: '',
+      category: '',
+      isNew: false,
     });
   };
 
@@ -93,6 +128,9 @@ export default function AdminPanel() {
       description: '',
       accent: 'hover:bg-blue-50',
       backgroundImage: '',
+      price: '',
+      category: '',
+      isNew: false,
     });
   };
 
@@ -220,6 +258,101 @@ export default function AdminPanel() {
     }
   };
 
+  // Category management functions
+  const [categoryFormData, setCategoryFormData] = useState<Partial<Category>>({
+    id: '',
+    name: '',
+    description: '',
+  });
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+
+  const handleCategoryAdd = () => {
+    setIsAddingCategory(true);
+    setEditingCategoryId(null);
+    setCategoryFormData({
+      id: '',
+      name: '',
+      description: '',
+    });
+  };
+
+  const handleCategoryEdit = (category: Category) => {
+    setEditingCategoryId(category.id);
+    setCategoryFormData(category);
+    setIsAddingCategory(false);
+  };
+
+  const handleCategoryCancel = () => {
+    setEditingCategoryId(null);
+    setIsAddingCategory(false);
+    setCategoryFormData({
+      id: '',
+      name: '',
+      description: '',
+    });
+  };
+
+  const handleCategorySave = async () => {
+    try {
+      if (!categoryFormData.id || !categoryFormData.name) {
+        alert('Заповніть обов\'язкові поля: ID, Назва');
+        return;
+      }
+
+      if (isAddingCategory) {
+        const response = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(categoryFormData),
+        });
+        
+        const result = await response.json();
+        if (!response.ok) {
+          alert(result.error || 'Помилка створення категорії');
+          return;
+        }
+      } else if (editingCategoryId) {
+        const response = await fetch(`/api/categories/${editingCategoryId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(categoryFormData),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          alert(result.error || 'Помилка оновлення категорії');
+          return;
+        }
+      }
+      await fetchCategories();
+      handleCategoryCancel();
+    } catch (error) {
+      console.error('Error saving category:', error);
+      alert('Помилка збереження');
+    }
+  };
+
+  const handleCategoryDelete = async (id: string) => {
+    if (!confirm('Ви впевнені, що хочете видалити цю категорію?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/categories/${id}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        alert(result.error || 'Помилка видалення категорії');
+        return;
+      }
+      await fetchCategories();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Помилка видалення');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -243,77 +376,250 @@ export default function AdminPanel() {
         </div>
       </header>
 
+      {/* Tabs */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="container mx-auto px-6">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`px-4 py-3 font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === 'products'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Package className="w-4 h-4" />
+              Товари
+            </button>
+            <button
+              onClick={() => setActiveTab('categories')}
+              className={`px-4 py-3 font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === 'categories'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <FolderTree className="w-4 h-4" />
+              Категорії
+            </button>
+          </div>
+        </div>
+      </div>
+
       <main className="container mx-auto px-6 py-8">
-        <div className="mb-6 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-900">Продукти</h2>
-          <button
-            onClick={handleAdd}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Додати продукт
-          </button>
-        </div>
-
-        {isAdding && (
-          <ProductForm
-            formData={formData}
-            setFormData={setFormData}
-            onSave={handleSave}
-            onCancel={handleCancel}
-            onImageUpload={(file) => handleImageUpload('new', file)}
-          />
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div key={product.id} className="bg-white rounded-xl border border-gray-200 p-6">
-              {editingId === product.id ? (
-                <ProductForm
-                  formData={formData}
-                  setFormData={setFormData}
-                  onSave={handleSave}
-                  onCancel={handleCancel}
-                  onImageUpload={(file) => handleImageUpload(product.id, file)}
-                />
-              ) : (
-                <>
-                  <div className="flex items-start justify-end mb-4">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(product)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(product.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{product.name}</h3>
-                  <p className="text-sm text-gray-600 mb-4">{product.description}</p>
-                  <p className="text-xs text-gray-400 font-mono truncate mb-2">{product.url}</p>
-                  {product.backgroundImage && (
-                    <div className="mt-4 rounded-lg overflow-hidden">
-                      <Image
-                        src={product.backgroundImage}
-                        alt={product.name}
-                        width={200}
-                        height={100}
-                        className="w-full h-24 object-cover"
-                      />
-                    </div>
-                  )}
-                </>
-              )}
+        {activeTab === 'products' ? (
+          <>
+            <div className="mb-6 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-900">Продукти</h2>
+              <button
+                onClick={handleAdd}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Додати продукт
+              </button>
             </div>
-          ))}
-        </div>
+
+            {isAdding && (
+              <ProductForm
+                formData={formData}
+                setFormData={setFormData}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                onImageUpload={(file) => handleImageUpload('new', file)}
+                categories={categories}
+              />
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                <div key={product.id} className="bg-white rounded-xl border border-gray-200 p-6">
+                  {editingId === product.id ? (
+                    <ProductForm
+                      formData={formData}
+                      setFormData={setFormData}
+                      onSave={handleSave}
+                      onCancel={handleCancel}
+                      onImageUpload={(file) => handleImageUpload(product.id, file)}
+                      categories={categories}
+                    />
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-end mb-4">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-bold text-gray-900">{product.name}</h3>
+                        {(product.isNew === true || product.isNew === 1) && (
+                          <span className="px-2 py-0.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-extrabold rounded-full shadow-md">
+                            НОВИНКА
+                          </span>
+                        )}
+                      </div>
+                      {product.price && (
+                        <p className="text-base font-bold text-gray-900 mb-2">{product.price}</p>
+                      )}
+                      {product.category && (
+                        <p className="text-xs text-blue-600 mb-2">{product.category}</p>
+                      )}
+                      <p className="text-xs text-gray-400 font-mono truncate mb-2">{product.url}</p>
+                      {product.backgroundImage && (
+                        <div className="mt-4 rounded-lg overflow-hidden">
+                          <Image
+                            src={product.backgroundImage}
+                            alt={product.name}
+                            width={200}
+                            height={100}
+                            className="w-full h-24 object-cover"
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="mb-6 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-900">Категорії</h2>
+              <button
+                onClick={handleCategoryAdd}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Додати категорію
+              </button>
+            </div>
+
+            {isAddingCategory && (
+              <CategoryForm
+                formData={categoryFormData}
+                setFormData={setCategoryFormData}
+                onSave={handleCategorySave}
+                onCancel={handleCategoryCancel}
+              />
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categories.map((category) => (
+                <div key={category.id} className="bg-white rounded-xl border border-gray-200 p-6">
+                  {editingCategoryId === category.id ? (
+                    <CategoryForm
+                      formData={categoryFormData}
+                      setFormData={setCategoryFormData}
+                      onSave={handleCategorySave}
+                      onCancel={handleCategoryCancel}
+                    />
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-end mb-4">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleCategoryEdit(category)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleCategoryDelete(category.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">{category.name}</h3>
+                      {category.description && (
+                        <p className="text-sm text-gray-600 mb-4">{category.description}</p>
+                      )}
+                      <p className="text-xs text-gray-400 font-mono">ID: {category.id}</p>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </main>
+    </div>
+  );
+}
+
+function CategoryForm({
+  formData,
+  setFormData,
+  onSave,
+  onCancel,
+}: {
+  formData: Partial<Category>;
+  setFormData: (data: Partial<Category>) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">ID</label>
+        <input
+          type="text"
+          value={formData.id || ''}
+          onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+          placeholder="Унікальний ID"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Назва</label>
+        <input
+          type="text"
+          value={formData.name || ''}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Опис</label>
+        <textarea
+          value={formData.description || ''}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+          rows={3}
+        />
+      </div>
+
+      <div className="flex gap-2 pt-2">
+        <button
+          onClick={onSave}
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          <Save className="w-4 h-4" />
+          Зберегти
+        </button>
+        <button
+          onClick={onCancel}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+        >
+          <X className="w-4 h-4" />
+          Скасувати
+        </button>
+      </div>
     </div>
   );
 }
@@ -324,12 +630,14 @@ function ProductForm({
   onSave,
   onCancel,
   onImageUpload,
+  categories,
 }: {
   formData: Partial<Product>;
   setFormData: (data: Partial<Product>) => void;
   onSave: () => void;
   onCancel: () => void;
   onImageUpload: (file: File) => void;
+  categories: Category[];
 }) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -383,13 +691,43 @@ function ProductForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Опис</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Ціна</label>
         <input
           type="text"
-          value={formData.description || ''}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          value={formData.price || ''}
+          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+          placeholder="Наприклад: 2600 ₴"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Категорія</label>
+        <select
+          value={formData.category || ''}
+          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value="">Без категорії</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.name}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="isNew"
+          checked={formData.isNew === true || formData.isNew === 1}
+          onChange={(e) => setFormData({ ...formData, isNew: e.target.checked })}
+          className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+        />
+        <label htmlFor="isNew" className="text-sm font-medium text-gray-700 cursor-pointer">
+          Новинка
+        </label>
       </div>
 
       <div>
