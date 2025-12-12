@@ -927,6 +927,55 @@ function ProductForm({
     }
   };
 
+  // Функція для автоматичного розрахунку відсотка знижки
+  const calculateDiscountPercent = (price: string, oldPrice: string) => {
+    // Очищаємо ціни від пробілів, символів ₴ та інших нечислових символів
+    const cleanPrice = parseFloat(price.replace(/[^\d.,]/g, '').replace(',', '.'));
+    const cleanOldPrice = parseFloat(oldPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
+
+    // Перевіряємо чи обидва значення валідні
+    if (isNaN(cleanPrice) || isNaN(cleanOldPrice) || cleanOldPrice <= 0 || cleanPrice <= 0) {
+      return undefined;
+    }
+
+    // Перевіряємо чи стара ціна більша за нову
+    if (cleanOldPrice <= cleanPrice) {
+      return undefined;
+    }
+
+    // Розраховуємо відсоток знижки
+    const discountPercent = Math.round(((cleanOldPrice - cleanPrice) / cleanOldPrice) * 100);
+    return discountPercent > 0 && discountPercent <= 100 ? discountPercent : undefined;
+  };
+
+  // Обробник зміни ціни
+  const handlePriceChange = (newPrice: string) => {
+    const updatedData = { ...formData, price: newPrice };
+    // Автоматично розраховуємо відсоток знижки, якщо є обидві ціни
+    if (newPrice && formData.oldPrice) {
+      const calculatedDiscount = calculateDiscountPercent(newPrice, formData.oldPrice);
+      updatedData.discountPercent = calculatedDiscount;
+    } else if (!newPrice || !formData.oldPrice) {
+      // Якщо одна з цін видалена, скидаємо відсоток знижки
+      updatedData.discountPercent = undefined;
+    }
+    setFormData(updatedData);
+  };
+
+  // Обробник зміни старої ціни
+  const handleOldPriceChange = (newOldPrice: string) => {
+    const updatedData = { ...formData, oldPrice: newOldPrice };
+    // Автоматично розраховуємо відсоток знижки, якщо є обидві ціни
+    if (formData.price && newOldPrice) {
+      const calculatedDiscount = calculateDiscountPercent(formData.price, newOldPrice);
+      updatedData.discountPercent = calculatedDiscount;
+    } else if (!formData.price || !newOldPrice) {
+      // Якщо одна з цін видалена, скидаємо відсоток знижки
+      updatedData.discountPercent = undefined;
+    }
+    setFormData(updatedData);
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -976,7 +1025,7 @@ function ProductForm({
         <input
           type="text"
           value={formData.price || ''}
-          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+          onChange={(e) => handlePriceChange(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
           placeholder="Наприклад: 2600 ₴"
         />
@@ -987,20 +1036,25 @@ function ProductForm({
         <input
           type="text"
           value={formData.oldPrice || ''}
-          onChange={(e) => setFormData({ ...formData, oldPrice: e.target.value })}
+          onChange={(e) => handleOldPriceChange(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
           placeholder="Наприклад: 3000 ₴"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Відсоток знижки</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Відсоток знижки
+          {(formData.price && formData.oldPrice && formData.discountPercent !== undefined) && (
+            <span className="text-xs text-gray-500 ml-2">(автоматично розраховано)</span>
+          )}
+        </label>
         <input
           type="number"
           value={formData.discountPercent || ''}
           onChange={(e) => setFormData({ ...formData, discountPercent: e.target.value ? parseInt(e.target.value) : undefined })}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
-          placeholder="Наприклад: 15"
+          placeholder="Наприклад: 15 (розраховується автоматично)"
           min="0"
           max="100"
         />

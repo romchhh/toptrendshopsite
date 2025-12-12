@@ -332,23 +332,6 @@ export default function TopTrendShop() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50">
-      {/* Top Navigation Bar */}
-      <nav className="bg-gray-900 text-white border-b border-gray-800 hidden sm:block">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between py-2 text-sm">
-            <div className="flex items-center gap-6">
-              <a href="#contacts" className="hover:text-gray-300 transition-colors">Контакти</a>
-              <a href="#about" className="hover:text-gray-300 transition-colors">Про нас</a>
-              <a href="#delivery" className="hover:text-gray-300 transition-colors">Доставка та оплата</a>
-              <a href="#privacy" className="hover:text-gray-300 transition-colors">Політика конфіденційності</a>
-              <a href="#accessibility" className="hover:text-gray-300 transition-colors">Політика доступності</a>
-              <a href="#offer" className="hover:text-gray-300 transition-colors">Публічна оферта</a>
-            </div>
-            <a href="#cabinet" className="hover:text-gray-300 transition-colors">Кабінет</a>
-          </div>
-        </div>
-      </nav>
-
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/95 border-b border-gray-100 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 py-3">
