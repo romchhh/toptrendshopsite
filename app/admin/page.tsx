@@ -1006,18 +1006,11 @@ function ProductForm({
           value={formData.url || ''}
           onChange={(e) => setFormData({ ...formData, url: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+          placeholder="trekillattechispace"
         />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Telegram URL</label>
-        <input
-          type="text"
-          value={formData.telegramUrl || ''}
-          onChange={(e) => setFormData({ ...formData, telegramUrl: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
-          placeholder="t.me/TopTrendShopBot/..."
-        />
+        <p className="mt-1 text-xs text-gray-500">
+          Тепер ти можеш в адмінці для кожного товару в полі URL вводити тільки частину на кшталт trekillattechispace.
+        </p>
       </div>
 
       <div>

@@ -264,22 +264,46 @@ export default function TopTrendShop() {
 
   const isFavorite = (productId: string) => favorites.includes(productId);
 
-  const handleProductClick = (url: string, telegramUrl?: string) => {
+  const buildProductUrl = (url: string) => {
+    if (!url) return '';
+
+    const raw = url.trim();
+    if (!raw) return '';
+
+    // Якщо збережено повний URL — використовуємо його як є
+    if (/^https?:\/\//i.test(raw)) {
+      return raw;
+    }
+
+    // Новий підхід: зберігаємо тільки частину після "/"
+    // Напр.: "trekillattechispace" або "/trekillattechispace"
+    const slug = raw.replace(/^\/+/, '');
+
+    // Відкриваємо сторінку товару на цьому ж домені
     if (typeof window !== 'undefined') {
+      return `${window.location.origin}/${slug}`;
+    }
+
+    // Фолбек на випадок відсутності window
+    return `/${slug}`;
+  };
+
+  const handleProductClick = (url: string) => {
+    if (typeof window !== 'undefined') {
+      const targetUrl = buildProductUrl(url);
+      if (!targetUrl) {
+        return;
+      }
+
       // Перевіряємо чи ми в Telegram Mini App
       if (window.Telegram?.WebApp) {
-        // Завжди використовуємо Telegram посилання якщо воно є
-        if (telegramUrl) {
-          window.Telegram.WebApp.openTelegramLink(`https://${telegramUrl}`);
-        } else {
-          // Якщо немає Telegram посилання, все одно намагаємося відкрити через Telegram
-          window.Telegram.WebApp.openLink(url, {
-            try_instant_view: true
-          });
-        }
+        // Відкриваємо піддомен всередині Mini App
+        window.Telegram.WebApp.openLink(targetUrl, {
+          try_instant_view: true
+        });
       } else {
         // Якщо не в Mini App, відкриваємо в новій вкладці
-        window.open(url, '_blank', 'noopener,noreferrer');
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
       }
     }
   };
@@ -647,7 +671,7 @@ export default function TopTrendShop() {
               <div
                 key={product.id}
                 className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-gray-300 active:scale-[0.98] flex flex-col cursor-pointer"
-                onClick={() => handleProductClick(product.url, product.telegramUrl)}
+                onClick={() => handleProductClick(product.url)}
               >
                 {/* Product Image */}
                 <div className="relative w-full aspect-square bg-white overflow-hidden">

@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
       INSERT INTO products (id, name, url, telegramUrl, emoji, description, accent, backgroundImage, price, oldPrice, discountPercent, category, isNew, displayOrder)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-      id, 
-      name, 
-      url, 
-      telegramUrl || null, 
+      id,
+      name,
+      url,
+      telegramUrl || null,
       '📦', 
       description || '', 
       accent || 'hover:bg-blue-50', 
