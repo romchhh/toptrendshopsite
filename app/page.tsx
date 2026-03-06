@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ArrowUpRight, Search, Send, MessageCircle, ArrowUp, LayoutGrid, Layers, Heart, ChevronDown, FolderTree } from 'lucide-react';
 
 interface Product {
@@ -41,6 +42,7 @@ interface Category {
 }
 
 export default function TopTrendShop() {
+  const router = useRouter();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categoriesFromApi, setCategoriesFromApi] = useState<Category[]>([]);
@@ -264,7 +266,7 @@ export default function TopTrendShop() {
 
   const isFavorite = (productId: string) => favorites.includes(productId);
 
-  const buildProductUrl = (url: string) => {
+  const buildProductPath = (url: string) => {
     if (!url) return '';
 
     const raw = url.trim();
@@ -279,33 +281,16 @@ export default function TopTrendShop() {
     // Напр.: "trekillattechispace" або "/trekillattechispace"
     const slug = raw.replace(/^\/+/, '');
 
-    // Відкриваємо сторінку товару на цьому ж домені
-    if (typeof window !== 'undefined') {
-      return `${window.location.origin}/${slug}`;
-    }
-
-    // Фолбек на випадок відсутності window
+    // Внутрішній маршрут в межах цього ж Next.js застосунку
     return `/${slug}`;
   };
 
   const handleProductClick = (url: string) => {
-    if (typeof window !== 'undefined') {
-      const targetUrl = buildProductUrl(url);
-      if (!targetUrl) {
-        return;
-      }
+    const targetPath = buildProductPath(url);
+    if (!targetPath) return;
 
-      // Перевіряємо чи ми в Telegram Mini App
-      if (window.Telegram?.WebApp) {
-        // Відкриваємо піддомен всередині Mini App
-        window.Telegram.WebApp.openLink(targetUrl, {
-          try_instant_view: true
-        });
-      } else {
-        // Якщо не в Mini App, відкриваємо в новій вкладці
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
-      }
-    }
+    // Клієнтська навігація в межах одного сайту без перезавантаження сторінки
+    router.push(targetPath);
   };
 
   const handleSearchClick = () => {
