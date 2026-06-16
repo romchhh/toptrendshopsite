@@ -58,6 +58,7 @@ export default function TopTrendShop() {
   const [priceFilterActive, setPriceFilterActive] = useState(false);
   const [visibleProductsCount, setVisibleProductsCount] = useState(10);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Ініціалізуємо Telegram WebApp
@@ -252,6 +253,24 @@ export default function TopTrendShop() {
   useEffect(() => {
     setVisibleProductsCount(10);
   }, [activeTab, selectedCategory, searchQuery, priceFilterActive, sortBy]);
+
+  // Автоматичне підвантаження при скролі до кінця списку
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleProductsCount(prev => prev + 10);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [sortedProducts.length, visibleProductsCount]);
 
   const toggleFavorite = (productId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -742,13 +761,8 @@ export default function TopTrendShop() {
             ))}
             </div>
             {sortedProducts.length > visibleProductsCount && (
-              <div className="mt-8 text-center">
-                <button
-                  onClick={() => setVisibleProductsCount(prev => prev + 10)}
-                  className="px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
-                >
-                  Показати ще
-                </button>
+              <div ref={loadMoreRef} className="mt-8 flex justify-center py-4">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400"></div>
               </div>
             )}
             </>
