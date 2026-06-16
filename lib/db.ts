@@ -111,6 +111,26 @@ export function initDatabase() {
     }
   }
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS meta_pixels (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      pixelId TEXT NOT NULL UNIQUE,
+      enabled INTEGER DEFAULT 1,
+      displayOrder INTEGER DEFAULT 0,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  const pixelCount = db.prepare('SELECT COUNT(*) as count FROM meta_pixels').get() as { count: number };
+  if (pixelCount.count === 0) {
+    db.prepare(`
+      INSERT INTO meta_pixels (id, name, pixelId, enabled, displayOrder)
+      VALUES (?, ?, ?, ?, ?)
+    `).run('pixel_default', 'Основний', '2013507330039435', 1, 0);
+  }
+
   // Перевірка чи є продукти, якщо ні - додаємо початкові дані
   const count = db.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number };
   

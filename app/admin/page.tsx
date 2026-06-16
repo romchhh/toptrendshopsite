@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Plus, Edit2, Trash2, LogOut, Save, X, Package, FolderTree, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, LogOut, Save, X, Package, FolderTree, ArrowUp, ArrowDown, BarChart3 } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -29,17 +29,33 @@ interface Category {
   displayOrder?: number;
 }
 
-type AdminTab = 'products' | 'categories';
+interface MetaPixel {
+  id: string;
+  name?: string | null;
+  pixelId: string;
+  enabled: number | boolean;
+  displayOrder?: number;
+}
+
+type AdminTab = 'products' | 'categories' | 'pixels';
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<AdminTab>('products');
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [metaPixels, setMetaPixels] = useState<MetaPixel[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   const [uploadingCategoryImage, setUploadingCategoryImage] = useState<string | null>(null);
+  const [pixelFormData, setPixelFormData] = useState<Partial<MetaPixel>>({
+    name: '',
+    pixelId: '',
+    enabled: true,
+  });
+  const [editingPixelId, setEditingPixelId] = useState<string | null>(null);
+  const [isAddingPixel, setIsAddingPixel] = useState(false);
   const router = useRouter();
 
   const [formData, setFormData] = useState<Partial<Product>>({
@@ -60,6 +76,7 @@ export default function AdminPanel() {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    fetchMetaPixels();
     checkAuth();
     // Ініціалізуємо displayOrder для товарів, якщо потрібно
     initProductOrder();
@@ -93,6 +110,17 @@ export default function AdminPanel() {
       setCategories(data);
     } catch (error) {
       console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchMetaPixels = async () => {
+    try {
+      const res = await fetch('/api/meta-pixels?all=1');
+      if (!res.ok) return;
+      const data = await res.json();
+      setMetaPixels(data);
+    } catch (error) {
+      console.error('Error fetching meta pixels:', error);
     }
   };
 
@@ -481,6 +509,92 @@ export default function AdminPanel() {
     }
   };
 
+  const handlePixelAdd = () => {
+    setIsAddingPixel(true);
+    setEditingPixelId(null);
+    setPixelFormData({
+      name: '',
+      pixelId: '',
+      enabled: true,
+    });
+  };
+
+  const handlePixelEdit = (pixel: MetaPixel) => {
+    setEditingPixelId(pixel.id);
+    setPixelFormData({
+      name: pixel.name || '',
+      pixelId: pixel.pixelId,
+      enabled: pixel.enabled === 1 || pixel.enabled === true,
+    });
+    setIsAddingPixel(false);
+  };
+
+  const handlePixelCancel = () => {
+    setEditingPixelId(null);
+    setIsAddingPixel(false);
+    setPixelFormData({
+      name: '',
+      pixelId: '',
+      enabled: true,
+    });
+  };
+
+  const handlePixelSave = async () => {
+    try {
+      if (!pixelFormData.pixelId?.trim()) {
+        alert('Вкажіть Pixel ID');
+        return;
+      }
+
+      if (isAddingPixel) {
+        const response = await fetch('/api/meta-pixels', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pixelFormData),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          alert(result.error || 'Помилка створення пікселя');
+          return;
+        }
+      } else if (editingPixelId) {
+        const response = await fetch(`/api/meta-pixels/${editingPixelId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pixelFormData),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          alert(result.error || 'Помилка оновлення пікселя');
+          return;
+        }
+      }
+
+      await fetchMetaPixels();
+      handlePixelCancel();
+    } catch (error) {
+      console.error('Error saving meta pixel:', error);
+      alert('Помилка збереження');
+    }
+  };
+
+  const handlePixelDelete = async (id: string) => {
+    if (!confirm('Ви впевнені, що хочете видалити цей піксель?')) return;
+
+    try {
+      const response = await fetch(`/api/meta-pixels/${id}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!response.ok) {
+        alert(result.error || 'Помилка видалення пікселя');
+        return;
+      }
+      await fetchMetaPixels();
+    } catch (error) {
+      console.error('Error deleting meta pixel:', error);
+      alert('Помилка видалення');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -529,6 +643,17 @@ export default function AdminPanel() {
             >
               <FolderTree className="w-4 h-4" />
               Категорії
+            </button>
+            <button
+              onClick={() => setActiveTab('pixels')}
+              className={`px-4 py-3 font-medium border-b-2 transition-colors flex items-center gap-2 ${
+                activeTab === 'pixels'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              Пікселі
             </button>
           </div>
         </div>
@@ -672,7 +797,7 @@ export default function AdminPanel() {
               ))}
             </div>
           </>
-        ) : (
+        ) : activeTab === 'categories' ? (
           <>
             <div className="mb-6 flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">Категорії</h2>
@@ -798,6 +923,83 @@ export default function AdminPanel() {
                 </div>
               ))}
             </div>
+          </>
+        ) : (
+          <>
+            <div className="mb-6 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-900">Meta Pixel</h2>
+              <button
+                onClick={handlePixelAdd}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Додати піксель
+              </button>
+            </div>
+
+            {isAddingPixel && (
+              <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6 max-w-xl">
+                <PixelForm
+                  formData={pixelFormData}
+                  setFormData={setPixelFormData}
+                  onSave={handlePixelSave}
+                  onCancel={handlePixelCancel}
+                />
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {metaPixels.map((pixel) => (
+                <div key={pixel.id} className="bg-white rounded-xl border border-gray-200 p-6">
+                  {editingPixelId === pixel.id ? (
+                    <PixelForm
+                      formData={pixelFormData}
+                      setFormData={setPixelFormData}
+                      onSave={handlePixelSave}
+                      onCancel={handlePixelCancel}
+                    />
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-end mb-4">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handlePixelEdit(pixel)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handlePixelDelete(pixel.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">
+                        {pixel.name || 'Без назви'}
+                      </h3>
+                      <p className="text-sm font-mono text-gray-700 mb-3">{pixel.pixelId}</p>
+                      <span
+                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          pixel.enabled === 1 || pixel.enabled === true
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {pixel.enabled === 1 || pixel.enabled === true ? 'Активний' : 'Вимкнений'}
+                      </span>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {metaPixels.length === 0 && !isAddingPixel && (
+              <div className="text-center py-16 text-gray-500">
+                Пікселів ще немає. Додайте перший Meta Pixel.
+              </div>
+            )}
           </>
         )}
       </main>
@@ -1102,6 +1304,74 @@ function ProductForm({
             />
           </div>
         )}
+      </div>
+
+      <div className="flex gap-2 pt-2">
+        <button
+          onClick={onSave}
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          <Save className="w-4 h-4" />
+          Зберегти
+        </button>
+        <button
+          onClick={onCancel}
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+        >
+          <X className="w-4 h-4" />
+          Скасувати
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PixelForm({
+  formData,
+  setFormData,
+  onSave,
+  onCancel,
+}: {
+  formData: Partial<MetaPixel>;
+  setFormData: (data: Partial<MetaPixel>) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Назва</label>
+        <input
+          type="text"
+          value={formData.name || ''}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+          placeholder="Наприклад: Основний"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Pixel ID</label>
+        <input
+          type="text"
+          value={formData.pixelId || ''}
+          onChange={(e) => setFormData({ ...formData, pixelId: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 font-mono"
+          placeholder="2013507330039435"
+        />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="pixelEnabled"
+          checked={formData.enabled === true || formData.enabled === 1}
+          onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
+          className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900"
+        />
+        <label htmlFor="pixelEnabled" className="text-sm font-medium text-gray-700 cursor-pointer">
+          Активний на сайті
+        </label>
       </div>
 
       <div className="flex gap-2 pt-2">
